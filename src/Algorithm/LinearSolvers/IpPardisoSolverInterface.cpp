@@ -536,23 +536,38 @@ namespace Ipopt
       bool check_NegEVals,
       Index numberOfNegEVals)
   {
-    DBG_START_METH("PardisoSolverInterface::MultiSolve",dbg_verbosity);
-    DBG_ASSERT(!check_NegEVals || ProvidesInertia());
-    DBG_ASSERT(initialized_);
+    // DBG_START_METH("PardisoSolverInterface::MultiSolve",dbg_verbosity);
+    // DBG_ASSERT(!check_NegEVals || ProvidesInertia());
+    // DBG_ASSERT(initialized_);
 
-    // check if a factorization has to be done
-    if (new_matrix) {
-      // perform the factorization
-      ESymSolverStatus retval;
-      retval = Factorization(ia, ja, check_NegEVals, numberOfNegEVals);
-      if (retval!=SYMSOLVER_SUCCESS) {
-        DBG_PRINT((1, "FACTORIZATION FAILED!\n"));
-        return retval;  // Matrix singular or error occurred
-      }
-    }
+    // // check if a factorization has to be done
+    // if (new_matrix) {
+    //   // perform the factorization
+    //   ESymSolverStatus retval;
+    //   retval = Factorization(ia, ja, check_NegEVals, numberOfNegEVals);
+    //   if (retval!=SYMSOLVER_SUCCESS) {
+    //     DBG_PRINT((1, "FACTORIZATION FAILED!\n"));
+    //     return retval;  // Matrix singular or error occurred
+    //   }
+    // }
 
-    // do the solve
-    return Solve(ia, ja, nrhs, rhs_vals);
+    // // do the solve
+    // return Solve(ia, ja, nrhs, rhs_vals);
+
+    printf("SOLVING PROBLEM USING PARALLEL MPI SOLVER\n");
+
+    //TODO
+    int pardiso_mtype = -2; // symmetric H_i
+    int schur_factorization = 1;
+    SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+    // KKT = ij, ja, a_
+    schurSolver.initSystem(KKT, nb, ng, nl, na, N);
+
+    // Only master contains RHS with actual data at this point
+    // it is communicated to children inside the solve
+    schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);
+    schurSolver.errorReport(number_of_rhs, *KKT, RHS.data, X.data);
+    schurSolver.timingReport();    
   }
 
   double* PardisoSolverInterface::GetValuesArrayPtr()
@@ -589,10 +604,15 @@ namespace Ipopt
     return retval;
   }
 
+  // Symbolic Factorization - structure of the matrix
   ESymSolverStatus
   PardisoSolverInterface::SymbolicFactorization(const Index* ia,
       const Index* ja)
   {
+
+    //my message
+    printf("I AM INSIDE PardisoSolverInterface::SymbolicFactorization()\n");
+
     DBG_START_METH("PardisoSolverInterface::SymbolicFactorization",
                    dbg_verbosity);
 
@@ -653,6 +673,8 @@ namespace Ipopt
 
       fclose (mat_file);
     }
+
+    // Dumping the matrix to the file
     /* addtional matrix format */
     if (getenv ("IPOPT_WRITE_MAT_MTX")) {
       /* Write header */
@@ -682,12 +704,16 @@ namespace Ipopt
     }
   }
 
+  // Passing also numeric values of the matrix (previously only structure)
   ESymSolverStatus
   PardisoSolverInterface::Factorization(const Index* ia,
                                         const Index* ja,
                                         bool check_NegEVals,
                                         Index numberOfNegEVals)
   {
+    //my message
+    printf("I AM INSIDE PardisoSolverInterface::Factorization()\n");
+
     DBG_START_METH("PardisoSolverInterface::Factorization",dbg_verbosity);
 
     // Call Pardiso to do the factorization
@@ -884,11 +910,15 @@ namespace Ipopt
     return SYMSOLVER_SUCCESS;
   }
 
+  // Pass also RHS to solve the system
   ESymSolverStatus PardisoSolverInterface::Solve(const Index* ia,
       const Index* ja,
       Index nrhs,
       double *rhs_vals)
   {
+    //my message
+    printf("I AM INSIDE PardisoSolverInterface::Solve()\n");
+
     DBG_START_METH("PardisoSolverInterface::Solve",dbg_verbosity);
 
     if (HaveIpData()) {
