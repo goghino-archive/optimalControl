@@ -540,6 +540,8 @@ namespace Ipopt
     DBG_ASSERT(!check_NegEVals || ProvidesInertia());
     DBG_ASSERT(initialized_);
 
+    printf("=====Inside PardisoSolverInterface::MultiSolve====\n");
+
     // check if a factorization has to be done
     if (new_matrix) {
       // perform the factorization
