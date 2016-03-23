@@ -165,11 +165,16 @@ inline void mpi_check(int mpi_call)
 // Q&A but how do they get to execution of the SchurSolve::init ::solve?
 int main(int argv, char* argc[])
 {
-  //TODO: if rank == MASTER
+  
+  mpi_check(MPI_Init(&argv, &argc));
+  
   int mpi_rank, mpi_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
+  ApplicationReturnStatus status;
+
+  //TODO: if rank == MASTER
   if(mpi_rank == 0)
   {
 
@@ -254,7 +259,6 @@ int main(int argv, char* argc[])
     app->Options()->SetStringValue("mu_strategy", "adaptive");
     app->Options()->SetStringValue("output_file", "ipopt.out");
     
-    ApplicationReturnStatus status;
     status = app->Initialize();
     if (status != Solve_Succeeded) {
       printf("\n\n*** Error during initialization!\n");
@@ -271,12 +275,12 @@ int main(int argv, char* argc[])
     //my solver
     int pardiso_mtype = -2; // symmetric H_i
     int schur_factorization = 1;
-    SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
-    schurSolver.initSystem(KKT, nb, ng, nl, na, N);
+    // SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+    // schurSolver.initSystem(KKT, nb, ng, nl, na, N);
 
-    // Only master contains RHS with actual data at this point
-    // it is communicated to children inside the solve
-    schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);  // TODO: can be NULLs at child proc. 
+    // // Only master contains RHS with actual data at this point
+    // // it is communicated to children inside the solve
+    // schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);  // TODO: can be NULLs at child proc. 
   }
 
   return (int) status;

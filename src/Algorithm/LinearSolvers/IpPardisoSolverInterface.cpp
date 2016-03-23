@@ -536,38 +536,38 @@ namespace Ipopt
       bool check_NegEVals,
       Index numberOfNegEVals)
   {
-    // DBG_START_METH("PardisoSolverInterface::MultiSolve",dbg_verbosity);
-    // DBG_ASSERT(!check_NegEVals || ProvidesInertia());
-    // DBG_ASSERT(initialized_);
+    printf("====SOLVING PROBLEM USING PARALLEL MPI SOLVER=====\n");
 
-    // // check if a factorization has to be done
-    // if (new_matrix) {
-    //   // perform the factorization
-    //   ESymSolverStatus retval;
-    //   retval = Factorization(ia, ja, check_NegEVals, numberOfNegEVals);
-    //   if (retval!=SYMSOLVER_SUCCESS) {
-    //     DBG_PRINT((1, "FACTORIZATION FAILED!\n"));
-    //     return retval;  // Matrix singular or error occurred
-    //   }
-    // }
+    DBG_START_METH("PardisoSolverInterface::MultiSolve",dbg_verbosity);
+    DBG_ASSERT(!check_NegEVals || ProvidesInertia());
+    DBG_ASSERT(initialized_);
 
-    // // do the solve
-    // return Solve(ia, ja, nrhs, rhs_vals);
+    // check if a factorization has to be done
+    if (new_matrix) {
+      // perform the factorization
+      ESymSolverStatus retval;
+      retval = Factorization(ia, ja, check_NegEVals, numberOfNegEVals);
+      if (retval!=SYMSOLVER_SUCCESS) {
+        DBG_PRINT((1, "FACTORIZATION FAILED!\n"));
+        return retval;  // Matrix singular or error occurred
+      }
+    }
 
-    printf("SOLVING PROBLEM USING PARALLEL MPI SOLVER\n");
+    // do the solve
+    return Solve(ia, ja, nrhs, rhs_vals);
 
     //TODO
     int pardiso_mtype = -2; // symmetric H_i
     int schur_factorization = 1;
-    SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
-    // KKT = ij, ja, a_
-    schurSolver.initSystem(KKT, nb, ng, nl, na, N);
+    // SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+    // // KKT = ij, ja, a_
+    // schurSolver.initSystem(KKT, nb, ng, nl, na, N);
 
-    // Only master contains RHS with actual data at this point
-    // it is communicated to children inside the solve
-    schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);
-    schurSolver.errorReport(number_of_rhs, *KKT, RHS.data, X.data);
-    schurSolver.timingReport();    
+    // // Only master contains RHS with actual data at this point
+    // // it is communicated to children inside the solve
+    // schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);
+    // schurSolver.errorReport(number_of_rhs, *KKT, RHS.data, X.data);
+    // schurSolver.timingReport();    
   }
 
   double* PardisoSolverInterface::GetValuesArrayPtr()
