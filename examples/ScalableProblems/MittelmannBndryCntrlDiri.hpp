@@ -181,13 +181,24 @@ private:
   /**@name Auxilliary methods */
   //@{
   /** Translation of mesh point indices to NLP variable indices for
-   *  y(x_ij) 
+   *  y(x_ij), not valid for boundary
    *
    *  (k)  -  scenario index
    *  (i,j) - index within grid */
   inline Index y_index(Index i, Index j, Index k) const
   {
-    return j + (N_+2)*i + (N_+2)*(N_+2)*k;
+    //offset to control variables
+    Index offset = NS_ * N_ * N_;
+    if(i<0)
+      return offset + 3*N_ + j; //West
+    if(i>=N_)
+      return offset + 2*N_ + j; //East
+    if(j<0)
+      return offset + 1*N_ + i; //South
+    if(j>=N_)
+      return offset        + i; //North
+
+    return i + (N_)*j + (N_)*(N_)*k;
   }
   /** Translation of interior mesh point indices to the corresponding
    *  PDE constraint number */
