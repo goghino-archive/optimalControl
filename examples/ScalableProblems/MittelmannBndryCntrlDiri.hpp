@@ -198,7 +198,7 @@ private:
     if(j>=N_)
       return offset        + i; //North
 
-    return i + (N_)*j + (N_)*(N_)*k;
+    return (N_)*(N_)*k + (N_)*i + j;
   }
   /** Translation of interior mesh point indices to the corresponding
    *  PDE constraint number */

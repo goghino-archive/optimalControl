@@ -54,7 +54,7 @@ MittelmannBndryCntrlDiriBase::SetBaseParameters(Index NS, Index N, Number alpha,
   for (Index k=0; k<NS_; k++) {
     for (Index i=0; i< N_; i++) {
       for (Index j=0; j< N_; j++) {
-        y_d_[y_index(j,i,k)] = y_d_cont(x1_grid(j+1),x2_grid(i+1)); //TODO: add noise, sum error also on boundary to dirichlet cond.
+        y_d_[y_index(i,j,k)] = y_d_cont(x1_grid(i+1),x2_grid(j+1)); //TODO: add noise, sum error also on boundary to dirichlet cond.
       }
     }
   }
@@ -102,7 +102,7 @@ MittelmannBndryCntrlDiriBase::get_bounds_info(Index n, Number* x_l, Number* x_u,
   for (Index k=0; k<NS_; k++) {
     for (Index i=0; i<N_; i++) {
       for (Index j=0; j<N_; j++) {
-        Index iy = y_index(j,i,k);
+        Index iy = y_index(i,j,k);
         x_l[iy] = lb_y_;
         x_u[iy] = ub_y_;
       }
@@ -153,7 +153,7 @@ MittelmannBndryCntrlDiriBase::get_starting_point(Index n, bool init_x, Number* x
   for (Index k=0; k<NS_; k++) {
       for (Index i=0; i< N_; i++) { 
           for (Index j=0; j<N_; j++) {
-              x[y_index(j,i,k)] = y_d_[y_index(j,i,k)]; //TODO: size of the x = new [size???], where is it initialized?
+              x[y_index(i,j,k)] = y_d_[y_index(i,j,k)]; //TODO: size of the x = new [size???], where is it initialized?
           }
       }
   }
@@ -192,7 +192,7 @@ MittelmannBndryCntrlDiriBase::eval_f(Index n, const Number* x,
       // First the integration of y-td over the interior
       for (Index i=0; i<N_; i++) {
           for (Index j=0; j< N_; j++) {
-              Index iy = y_index(j,i,k);
+              Index iy = y_index(i,j,k);
               Number tmp = x[iy] - y_d_[iy];
               obj_value_i += tmp*tmp;
           }
@@ -225,7 +225,7 @@ MittelmannBndryCntrlDiriBase::eval_grad_f(Index n, const Number* x, bool new_x, 
         // integrand over the interior
         for (Index i=0; i<N_; i++) {
             for (Index j=0; j< N_; j++) {
-                Index iy = y_index(j,i,k);
+                Index iy = y_index(i,j,k);
                 grad_f[iy] = hh_*(x[iy] - y_d_[iy]);
             }
         }
@@ -261,9 +261,9 @@ bool MittelmannBndryCntrlDiriBase::eval_g(Index n, const Number* x, bool new_x,
               Number val;
 
               // Start with the discretized Laplacian operator
-              val = 4.* x[y_index(j,i,k)]
-                  - x[y_index(j-1,i,k)] - x[y_index(j+1,i,k)] 
-                  - x[y_index(j,i-1,k)] - x[y_index(j,i+1,k)]; //!!! if i,j<0 || i,j>=N_
+              val = 4.* x[y_index(i,j,k)]
+                  - x[y_index(i-1,j,k)] - x[y_index(i+1,j,k)] 
+                  - x[y_index(i,j-1,k)] - x[y_index(i,j+1,k)]; //!!! if i,j<0 || i,j>=N_
 
               g[ig] = val;
               ig++;
@@ -292,27 +292,27 @@ bool MittelmannBndryCntrlDiriBase::eval_jac_g(Index n, const Number* x, bool new
 
                   // y(i,j)
                   iRow[ijac] = ig;
-                  jCol[ijac] = y_index(j,i,k);
+                  jCol[ijac] = y_index(i,j,k);
                   ijac++;
 
                   // y(i-1,j)
                   iRow[ijac] = ig;
-                  jCol[ijac] = y_index(j-1,i,k);
+                  jCol[ijac] = y_index(i-1,j,k);
                   ijac++;
 
                   // y(i+1,j)
                   iRow[ijac] = ig;
-                  jCol[ijac] = y_index(j+1,i,k);
+                  jCol[ijac] = y_index(i+1,j,k);
                   ijac++;
 
                   // y(i,j-1)
                   iRow[ijac] = ig;
-                  jCol[ijac] = y_index(j,i-1,k);
+                  jCol[ijac] = y_index(i,j-1,k);
                   ijac++;
 
                   // y(i,j+1)
                   iRow[ijac] = ig;
-                  jCol[ijac] = y_index(j,i+1,k);
+                  jCol[ijac] = y_index(i,j+1,k);
                   ijac++;
 
                   ig++;
@@ -375,8 +375,8 @@ MittelmannBndryCntrlDiriBase::eval_h(Index n, const Number* x, bool new_x,
             // First the diagonal entries for y(i,j)
             for (Index i=0; i< N_; i++) {
                 for (Index j=0; j< N_; j++) {
-                    iRow[ihes] = y_index(j,i,k);
-                    jCol[ihes] = y_index(j,i,k);
+                    iRow[ihes] = y_index(i,j,k);
+                    jCol[ihes] = y_index(i,j,k);
                     ihes++;
                 }
             }
@@ -440,7 +440,7 @@ MittelmannBndryCntrlDiriBase::finalize_solution(SolverReturn status,
         for (Index i=0; i<N_; i++) {
             //for (Index j=0; j<=N_+1; j++) {
                 fprintf(fp, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset + i]);
-                //fprintf(fp, "y[%6d,%6d] = %15.8e\n", i, j, x[y_index(j,i,k)]);
+                //fprintf(fp, "y[%6d,%6d] = %15.8e\n", i, j, x[y_index(i,j,k)]);
             //}
         }
     }
