@@ -54,7 +54,7 @@ MittelmannBndryCntrlDiriBase::SetBaseParameters(Index NS, Index N, Number alpha,
   for (Index k=0; k<NS_; k++) {
     for (Index i=0; i< N_; i++) {
       for (Index j=0; j< N_; j++) {
-        y_d_[y_index(j,i,k)] = y_d_cont(x1_grid(j+1),x2_grid(i+1)); //TODO: add noise, sum error also on boundary, satisfying dirichlet cond.
+        y_d_[y_index(j,i,k)] = y_d_cont(x1_grid(j+1),x2_grid(i+1)); //TODO: add noise, sum error also on boundary to dirichlet cond.
       }
     }
   }
@@ -67,7 +67,7 @@ bool MittelmannBndryCntrlDiriBase::get_nlp_info(
   // We for each of the N_+2 times N_+2 mesh points we have the value
   // of the functions y, including the control parameters on the boundary
   // # of mesh points including boundary 
-  n = N_*N_*NS_ + (4*N_ + 4); //TODO
+  n = N_*N_*NS_ + (4*N_ + 4);
 
   // For each of the N_ times N_ interior mesh points we have the
   // discretized PDE.
@@ -82,7 +82,7 @@ bool MittelmannBndryCntrlDiriBase::get_nlp_info(
   nnz_h_lag = N_*N_*NS_;
   if (alpha_>0.) {
     // and one entry for u(i,j) in the bundary if alpha is not zero
-    nnz_h_lag += 4*N_;
+    nnz_h_lag += 4*N_ + 4;
   }
 
   // We use the C indexing style for row/col entries (corresponding to
@@ -96,8 +96,7 @@ bool
 MittelmannBndryCntrlDiriBase::get_bounds_info(Index n, Number* x_l, Number* x_u,
     Index m, Number* g_l, Number* g_u)
 {
-  //TODO: x_l, x_u structure
-  //[Y1, Y2, ..., Yns, U]
+  //[Y1, Y2, ..., Yns, U] of size [NN, NN, ..., NN, 4N+4]
 
   // Set overall bounds on the state variables y
   for (Index k=0; k<NS_; k++) {
@@ -159,7 +158,7 @@ MittelmannBndryCntrlDiriBase::get_starting_point(Index n, bool init_x, Number* x
       }
   }
 
-  // set initial control on the boundary
+  // set initial control on the boundary from the interior of the constraints
   Number umid = (ub_u_ + lb_u_)/2.;
   Index offset = NS_ * N_*N_;
   for (Index i=0; i<4*N_ + 4; i++) {
@@ -211,7 +210,7 @@ MittelmannBndryCntrlDiriBase::eval_f(Index n, const Number* x,
         obj_value += alpha_*h_/2.*usum;
     }
   
-  //obj_value = obj_value / NS_; // TODO if scaled the emphasis is put on the lin. constraints
+  //obj_value = obj_value / NS_; // if scaled the emphasis is put on the lin. constraints
 
   return true;
 }
@@ -234,23 +233,16 @@ MittelmannBndryCntrlDiriBase::eval_grad_f(Index n, const Number* x, bool new_x, 
 
     Index offset = NS_*N_*N_;
     // The values for variables on the boundary
-    if (alpha_>0.) {
-        for (Index i=0; i< 4*N_; i++) {
-            grad_f[offset+i] = alpha_*h_*x[offset+i]; //TODO - single control for all scenarios
+    if (alpha_ > 0.) {
+        for (Index i=0; i<4*N_+4; i++) {
+            grad_f[offset+i] = alpha_*h_*x[offset+i];
         }
     }
     else {
-        for (Index i=0; i< 4*N_; i++) {
+        for (Index i=0; i< 4*N_+4; i++) {
             grad_f[offset+i] = 0.;
         }
     }
-
-    // Nothing on the corner points
-    offset += 4*N_;
-    grad_f[offset]   = alpha_*h_*x[offset];
-    grad_f[offset+1] = alpha_*h_*x[offset+1];
-    grad_f[offset+2] = alpha_*h_*x[offset+2];
-    grad_f[offset+3] = alpha_*h_*x[offset+3];
 
   return true;
 }
@@ -271,7 +263,7 @@ bool MittelmannBndryCntrlDiriBase::eval_g(Index n, const Number* x, bool new_x,
               // Start with the discretized Laplacian operator
               val = 4.* x[y_index(j,i,k)]
                   - x[y_index(j-1,i,k)] - x[y_index(j+1,i,k)] 
-                  - x[y_index(j,i-1,k)] - x[y_index(j,i+1,k)]; //TODO - i,j<0 && i,j>N_
+                  - x[y_index(j,i-1,k)] - x[y_index(j,i+1,k)]; //!!! if i,j<0 || i,j>=N_
 
               g[ig] = val;
               ig++;
@@ -393,8 +385,8 @@ MittelmannBndryCntrlDiriBase::eval_h(Index n, const Number* x, bool new_x,
         Index offset = NS_ * N_ * N_;
         if (alpha_>0.) {
             // Now the diagonal entries for u at the boundary
-            for (Index i=0; i<4*N_; i++) {
-                iRow[ihes] = offset + i; //TODO - single control for all scenarios
+            for (Index i=0; i<4*N_+4; i++) {
+                iRow[ihes] = offset + i;
                 jCol[ihes] = offset + i;
                 ihes++;
             }
@@ -422,7 +414,7 @@ MittelmannBndryCntrlDiriBase::eval_h(Index n, const Number* x, bool new_x,
         // Now the diagonal entries for u(i,j)
         if (alpha_>0.) {
             // Now the diagonal entries for u at the boundary
-            for (Index i=0; i<4*N_; i++) {
+            for (Index i=0; i<4*N_+4; i++) {
                 values[ihes] = obj_factor*h_*alpha_;
                 ihes++;
             }
