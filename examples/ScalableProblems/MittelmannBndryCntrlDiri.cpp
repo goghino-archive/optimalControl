@@ -489,15 +489,16 @@ MittelmannBndryCntrlDiriBase::finalize_solution(SolverReturn status,
     const IpoptData* ip_data,
     IpoptCalculatedQuantities* ip_cq)
 {
-  /*
+
   FILE* fp = fopen("solution.txt", "w+");
 
+  int j = 0;
   for (Index i=0; i<=N_+1; i++) {
-    for (Index j=0; j<=N_+1; j++) {
-      fprintf(fp, "y[%6d,%6d] = %15.8e\n", i, j, x[y_index(i,j)]);
-    }
+    //for (Index j=0; j<=N_+1; j++) {
+      fprintf(fp, "%15.8e %15.8e\n", i*h_ + 1., x[y_index(i,j)]);
+    //}
   }
 
   fclose(fp);
-  */
+  
 }
