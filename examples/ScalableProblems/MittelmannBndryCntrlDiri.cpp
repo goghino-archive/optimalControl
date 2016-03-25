@@ -433,17 +433,25 @@ MittelmannBndryCntrlDiriBase::finalize_solution(SolverReturn status,
     const IpoptData* ip_data,
     IpoptCalculatedQuantities* ip_cq)
 {
-    FILE* fp = fopen("solution.txt", "w+");
+    FILE* fp1 = fopen("solution1.txt", "w+"); 
+    FILE* fp2 = fopen("solution2.txt", "w+");
+    FILE* fp3 = fopen("solution3.txt", "w+");
+    FILE* fp4 = fopen("solution4.txt", "w+");
 
-    Index offset = NS_ * N_ * N_;
+
+    Index offset = NS_*N_*N_ ;
     for (Index k=0; k<NS_; k++) {
         for (Index i=0; i<N_; i++) {
-            //for (Index j=0; j<=N_+1; j++) {
-                fprintf(fp, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset + i]);
-                //fprintf(fp, "y[%6d,%6d] = %15.8e\n", i, j, x[y_index(i,j,k)]);
-            //}
+            fprintf(fp1, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset + i]);      // North
+            fprintf(fp2, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+N_ + i]);   // South
+            fprintf(fp3, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+2*N_ + i]); // East
+            fprintf(fp4, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+3*N_ + i]); // West
+            //fprintf(fp, "y[%6d,%6d] = %15.8e\n", i, j, x[y_index(i,j,k)]);
         }
     }
 
-    fclose(fp);
+    fclose(fp1);
+    fclose(fp2);
+    fclose(fp3);
+    fclose(fp4);
 }
