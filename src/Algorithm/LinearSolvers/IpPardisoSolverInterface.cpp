@@ -17,6 +17,8 @@
 #include "IpoptConfig.h"
 #include "IpPardisoSolverInterface.hpp"
 # include <math.h>
+#include <iostream> //writeToFile
+#include <fstream> //writeToFile
 
 #ifdef HAVE_CSTDIO
 # include <cstdio>
@@ -553,6 +555,9 @@ namespace Ipopt
       }
     }
 
+    const char* filename = "/home/kardos/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat.csr";
+    writeToFile(filename, dim_, dim_, nonzeros_, ia, ja, a_);
+
     // do the solve
     return Solve(ia, ja, nrhs, rhs_vals);
 
@@ -626,6 +631,50 @@ namespace Ipopt
 
     return SYMSOLVER_SUCCESS;
   }
+
+void PardisoSolverInterface::writeToFile(const char* filename, int nrows, int ncols, int nonzeros,
+                        const int* pRows, const int* pCols, const double* pData)
+{
+    std::cout << "\t---> Dumping matrix to file: " << filename << std::endl;
+
+    std::fstream fout(filename, std::ios::out);
+    if (!fout.is_open())
+    {
+        std::cout << "could not open file " << filename << " for output\n";
+        return;
+    }
+
+    fout << nrows << "\n";
+    fout << ncols << "\n";
+    fout << nonzeros << "\n";
+
+    #ifdef VERBOSE
+    cout << "nrows: " << nrows << std::endl;
+    cout << "ncols: " << ncols << std::endl;
+    cout << "nonzeros: " << nonzeros << std::endl;
+    #endif
+
+    int i;
+    for (i = 0; i < nrows+1; i++)
+    {
+        fout << pRows[i] << "\n";
+    }
+
+    for (i = 0; i < nonzeros; i++)
+    {
+        fout << pCols[i] << "\n";
+    }
+
+    fout.setf(std::ios::scientific, std::ios::floatfield);
+    fout.precision(16);
+
+    for (i = 0; i < nonzeros; i++)
+    {
+        fout << pData[i] << "\n";
+    }
+
+    fout.close();
+}
 
   static void
   write_iajaa_matrix (int     N,
