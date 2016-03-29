@@ -17,6 +17,8 @@
 #include "IpoptConfig.h"
 #include "IpPardisoSolverInterface.hpp"
 # include <math.h>
+#include <iostream> //writeToFile
+#include <fstream> //writeToFile
 
 #ifdef HAVE_CSTDIO
 # include <cstdio>
@@ -536,6 +538,8 @@ namespace Ipopt
       bool check_NegEVals,
       Index numberOfNegEVals)
   {
+    printf("====SOLVING PROBLEM USING PARALLEL MPI SOLVER=====\n");
+
     DBG_START_METH("PardisoSolverInterface::MultiSolve",dbg_verbosity);
     DBG_ASSERT(!check_NegEVals || ProvidesInertia());
     DBG_ASSERT(initialized_);
@@ -553,8 +557,24 @@ namespace Ipopt
       }
     }
 
+    const char* filename = "/home/kardos/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat.csr";
+    writeToFile(filename, dim_, dim_, nonzeros_, ia, ja, a_);
+
     // do the solve
     return Solve(ia, ja, nrhs, rhs_vals);
+
+    //TODO
+    int pardiso_mtype = -2; // symmetric H_i
+    int schur_factorization = 1;
+    // SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+    // // KKT = ij, ja, a_
+    // schurSolver.initSystem(KKT, nb, ng, nl, na, N);
+
+    // // Only master contains RHS with actual data at this point
+    // // it is communicated to children inside the solve
+    // schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);
+    // schurSolver.errorReport(number_of_rhs, *KKT, RHS.data, X.data);
+    // schurSolver.timingReport();    
   }
 
   double* PardisoSolverInterface::GetValuesArrayPtr()
@@ -591,10 +611,15 @@ namespace Ipopt
     return retval;
   }
 
+  // Symbolic Factorization - structure of the matrix
   ESymSolverStatus
   PardisoSolverInterface::SymbolicFactorization(const Index* ia,
       const Index* ja)
   {
+
+    //my message
+    printf("I AM INSIDE PardisoSolverInterface::SymbolicFactorization()\n");
+
     DBG_START_METH("PardisoSolverInterface::SymbolicFactorization",
                    dbg_verbosity);
 
@@ -608,6 +633,50 @@ namespace Ipopt
 
     return SYMSOLVER_SUCCESS;
   }
+
+void PardisoSolverInterface::writeToFile(const char* filename, int nrows, int ncols, int nonzeros,
+                        const int* pRows, const int* pCols, const double* pData)
+{
+    std::cout << "\t---> Dumping matrix to file: " << filename << std::endl;
+
+    std::fstream fout(filename, std::ios::out);
+    if (!fout.is_open())
+    {
+        std::cout << "could not open file " << filename << " for output\n";
+        return;
+    }
+
+    fout << nrows << "\n";
+    fout << ncols << "\n";
+    fout << nonzeros << "\n";
+
+    #ifdef VERBOSE
+    cout << "nrows: " << nrows << std::endl;
+    cout << "ncols: " << ncols << std::endl;
+    cout << "nonzeros: " << nonzeros << std::endl;
+    #endif
+
+    int i;
+    for (i = 0; i < nrows+1; i++)
+    {
+        fout << pRows[i] << "\n";
+    }
+
+    for (i = 0; i < nonzeros; i++)
+    {
+        fout << pCols[i] << "\n";
+    }
+
+    fout.setf(std::ios::scientific, std::ios::floatfield);
+    fout.precision(16);
+
+    for (i = 0; i < nonzeros; i++)
+    {
+        fout << pData[i] << "\n";
+    }
+
+    fout.close();
+}
 
   static void
   write_iajaa_matrix (int     N,
@@ -655,6 +724,8 @@ namespace Ipopt
 
       fclose (mat_file);
     }
+
+    // Dumping the matrix to the file
     /* addtional matrix format */
     if (getenv ("IPOPT_WRITE_MAT_MTX")) {
       /* Write header */
@@ -684,12 +755,16 @@ namespace Ipopt
     }
   }
 
+  // Passing also numeric values of the matrix (previously only structure)
   ESymSolverStatus
   PardisoSolverInterface::Factorization(const Index* ia,
                                         const Index* ja,
                                         bool check_NegEVals,
                                         Index numberOfNegEVals)
   {
+    //my message
+    printf("I AM INSIDE PardisoSolverInterface::Factorization()\n");
+
     DBG_START_METH("PardisoSolverInterface::Factorization",dbg_verbosity);
 
     // Call Pardiso to do the factorization
@@ -886,11 +961,15 @@ namespace Ipopt
     return SYMSOLVER_SUCCESS;
   }
 
+  // Pass also RHS to solve the system
   ESymSolverStatus PardisoSolverInterface::Solve(const Index* ia,
       const Index* ja,
       Index nrhs,
       double *rhs_vals)
   {
+    //my message
+    printf("I AM INSIDE PardisoSolverInterface::Solve()\n");
+
     DBG_START_METH("PardisoSolverInterface::Solve",dbg_verbosity);
 
     if (HaveIpData()) {

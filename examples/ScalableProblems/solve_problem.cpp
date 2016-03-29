@@ -6,6 +6,8 @@
 //
 // Authors:  Andreas Waechter            IBM    2004-11-05
 
+#include "mpi.h"
+
 #include "IpIpoptApplication.hpp"
 #include "RegisteredTNLP.hpp"
 
@@ -151,93 +153,135 @@ static void print_problems()
   RegisteredTNLPs::PrintRegisteredProblems();
 }
 
+inline void mpi_check(int mpi_call)
+{
+    if ((mpi_call) != 0) { 
+        cerr << "MPI Error detected!" << endl;
+        exit(1);
+    }
+}
+
+// Only master process executes, child wait for the job from master (or jump to end in this case)
+// Q&A but how do they get to execution of the SchurSolve::init ::solve?
 int main(int argv, char* argc[])
 {
-  if (argv==2 && !strcmp(argc[1],"list")) {
-    print_problems();
-    return 0;
-  }
+  
+  mpi_check(MPI_Init(&argv, &argc));
+  
+  int mpi_rank, mpi_size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-#ifdef TIME_LIMIT
-  if (argv==4) {
-    int runtime = atoi(argc[3]);
-    pthread_t thread;
-    pthread_create(&thread, NULL, killer_thread, &runtime);
-  }
-  else
-#endif
-    if (argv!=3 && argv!=1) {
-      printf("Usage: %s (this will ask for problem name)\n", argc[0]);
-      printf("       %s ProblemName N\n", argc[0]);
-      printf("          where N is a positive parameter determining problem size\n");
-      printf("       %s list\n", argc[0]);
-      printf("          to list all registered problems.\n");
-      return -1;
-    }
+  ApplicationReturnStatus status;
 
-  SmartPtr<RegisteredTNLP> tnlp;
-  Index N;
+  //TODO: if rank == MASTER
+  if(mpi_rank == 0)
+  {
 
-  if (argv!=1) {
-    // Create an instance of your nlp...
-    tnlp = RegisteredTNLPs::GetTNLP(argc[1]);
-    if (!IsValid(tnlp)) {
-      printf("Problem with name \"%s\" not known.\n", argc[1]);
+    if (argv==2 && !strcmp(argc[1],"list")) {
       print_problems();
-      return -2;
+      return 0;
     }
 
-    N = atoi(argc[2]);
-  }
-  else {
-    bool done = false;
-    while (!done) {
-      string inputword;
-      cout << "Enter problem name (or \"list\" for all available names):\n";
-      cin >> inputword;
-      if (inputword=="list") {
-        print_problems();
+
+
+  #ifdef TIME_LIMIT
+    if (argv==4) {
+      int runtime = atoi(argc[3]);
+      pthread_t thread;
+      pthread_create(&thread, NULL, killer_thread, &runtime);
+    }
+    else
+  #endif
+      if (argv!=3 && argv!=1) {
+        printf("Usage: %s (this will ask for problem name)\n", argc[0]);
+        printf("       %s ProblemName N\n", argc[0]);
+        printf("          where N is a positive parameter determining problem size\n");
+        printf("       %s list\n", argc[0]);
+        printf("          to list all registered problems.\n");
+        return -1;
       }
-      else {
-        tnlp = RegisteredTNLPs::GetTNLP(inputword.c_str());
-        if (!IsValid(tnlp)) {
-          printf("Problem with name \"%s\" not known.\n", inputword.c_str());
+
+    SmartPtr<RegisteredTNLP> tnlp;
+    Index N;
+
+    if (argv!=1) {
+      // Create an instance of your nlp...
+      tnlp = RegisteredTNLPs::GetTNLP(argc[1]);
+      if (!IsValid(tnlp)) {
+        printf("Problem with name \"%s\" not known.\n", argc[1]);
+        print_problems();
+        return -2;
+      }
+
+      N = atoi(argc[2]);
+    }
+    else {
+      bool done = false;
+      while (!done) {
+        string inputword;
+        cout << "Enter problem name (or \"list\" for all available names):\n";
+        cin >> inputword;
+        if (inputword=="list") {
+          print_problems();
         }
         else {
-          done = true;
+          tnlp = RegisteredTNLPs::GetTNLP(inputword.c_str());
+          if (!IsValid(tnlp)) {
+            printf("Problem with name \"%s\" not known.\n", inputword.c_str());
+          }
+          else {
+            done = true;
+          }
         }
       }
+      cout << "Enter problem size:\n";
+      cin >> N;
     }
-    cout << "Enter problem size:\n";
-    cin >> N;
-  }
 
-  if (N <= 0) {
-    printf("Given problem size is invalid.\n");
-    return -3;
-  }
+    if (N <= 0) {
+      printf("Given problem size is invalid.\n");
+      return -3;
+    }
 
-  bool retval = tnlp->InitializeProblem(N);
-  if (!retval) {
-    printf("Cannot initialize problem.  Abort.\n");
-    return -4;
-  }
+    bool retval = tnlp->InitializeProblem(N);
+    if (!retval) {
+      printf("Cannot initialize problem.  Abort.\n");
+      return -4;
+    }
 
-  // Create an instance of the IpoptApplication
-  // We are using the factory, since this allows us to compile this
-  // example with an Ipopt Windows DLL
-  SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
-  ApplicationReturnStatus status;
-  status = app->Initialize();
-  if (status != Solve_Succeeded) {
-    printf("\n\n*** Error during initialization!\n");
-    return (int) status;
-  }
-  // Set option to use internal scaling
-  // DOES NOT WORK FOR VLUKL* PROBLEMS:
-  // app->Options()->SetStringValueIfUnset("nlp_scaling_method", "user-scaling");
+    // Create an instance of the IpoptApplication
+    // We are using the factory, since this allows us to compile this
+    // example with an Ipopt Windows DLL
+    SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
 
-  status = app->OptimizeTNLP(GetRawPtr(tnlp));
+    app->Options()->SetNumericValue("tol", 1e-7);
+    app->Options()->SetStringValue("mu_strategy", "adaptive");
+    app->Options()->SetStringValue("output_file", "ipopt.out");
+    
+    status = app->Initialize();
+    if (status != Solve_Succeeded) {
+      printf("\n\n*** Error during initialization!\n");
+      return (int) status;
+    }
+    // Set option to use internal scaling
+    // DOES NOT WORK FOR VLUKL* PROBLEMS:
+    // app->Options()->SetStringValueIfUnset("nlp_scaling_method", "user-scaling");
+
+    status = app->OptimizeTNLP(GetRawPtr(tnlp));
+  }
+  else //TODO
+  {
+    //my solver
+    int pardiso_mtype = -2; // symmetric H_i
+    int schur_factorization = 1;
+    // SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+    // schurSolver.initSystem(KKT, nb, ng, nl, na, N);
+
+    // // Only master contains RHS with actual data at this point
+    // // it is communicated to children inside the solve
+    // schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);  // TODO: can be NULLs at child proc. 
+  }
 
   return (int) status;
 }
