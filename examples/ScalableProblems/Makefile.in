@@ -54,14 +54,7 @@ LIBOBJS =  \
         LuksanVlcek5.@OBJEXT@ \
         LuksanVlcek6.@OBJEXT@ \
         LuksanVlcek7.@OBJEXT@ \
-        RegisteredTNLP.@OBJEXT@ \
-        SchurSolve.@OBJEXT@ \
-        Partition.@OBJEXT@ \
-        ParDiSO.@OBJEXT@ \
-        PardisoParameters.@OBJEXT@ \
-        readdata.@OBJEXT@ \
-        CSRdouble.@OBJEXT@ \
-        Matrix2D.@OBJEXT@ 
+        RegisteredTNLP.@OBJEXT@
 
 all: $(EXE)
 
@@ -81,13 +74,6 @@ MittelmannBndryCntrlDiri3D.@OBJEXT@: MittelmannBndryCntrlDiri3D.hpp
 MittelmannBndryCntrlDiri3D_27.@OBJEXT@: MittelmannBndryCntrlDiri3D_27.hpp
 MittelmannBndryCntrlDiri3Dsin.@OBJEXT@: MittelmannBndryCntrlDiri3Dsin.hpp
 MittelmannBndryCntrlNeum.@OBJEXT@: MittelmannBndryCntrlNeum.hpp
-SchurSolve.@OBJEXT@ : SchurSolve.hpp
-Partition.@OBJEXT@ : Partition.hpp
-ParDiSO.@OBJEXT@ : ParDiSO.hpp
-PardisoParameters.@OBJEXT@ : PardisoParameters.hpp
-readdata.@OBJEXT@ : readdata.hpp
-CSRdouble.@OBJEXT@ : CSRdouble.hpp
-Matrix2D.@OBJEXT@ : Matrix2D.hpp
 
 solve_problem.@OBJEXT@: \
 	LuksanVlcek1.hpp \
@@ -105,14 +91,7 @@ solve_problem.@OBJEXT@: \
 	MittelmannBndryCntrlDiri3D_27.hpp \
 	MittelmannBndryCntrlDiri3Dsin.hpp \
 	MittelmannBndryCntrlNeum.hpp \
-	MittelmannParaCntrl.hpp \
-	SchurSolve.hpp \
-	Partition.hpp \
-	ParDiSO.hpp \
-	PardisoParameters.hpp \
-	readdata.hpp \
-	CSRdouble.hpp \
-	Matrix2D.hpp
+	MittelmannParaCntrl.hpp
 
 # The following is necessary under cygwin, if native compilers are used
 CYGPATH_W = @CYGPATH_W@
