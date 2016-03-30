@@ -99,7 +99,7 @@ CYGPATH_W = @CYGPATH_W@
 .SUFFIXES: .cpp .c .o .obj
 
 # Add include paht to the SchurSolver
-#INCL += -I$(SCHURDIR)
+INCL += -I../../../../Ipopt/src/Algorithm/LinearSolvers
 
 $(EXE): $(MAINOBJ) $(LIB)
 	$(CXX) $(CXXFLAGS) $(CXXLINKFLAGS) -o $@ $(MAINOBJ) $(LIBS)
