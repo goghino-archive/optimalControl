@@ -7,6 +7,7 @@
 // Authors:  Andreas Waechter            IBM    2004-11-05
 
 #include "mpi.h"
+#include "SchurSolve.hpp"
 
 #include "IpIpoptApplication.hpp"
 #include "RegisteredTNLP.hpp"
@@ -153,14 +154,6 @@ static void print_problems()
   RegisteredTNLPs::PrintRegisteredProblems();
 }
 
-inline void mpi_check(int mpi_call)
-{
-    if ((mpi_call) != 0) { 
-        cerr << "MPI Error detected!" << endl;
-        exit(1);
-    }
-}
-
 // Only master process executes, child wait for the job from master (or jump to end in this case)
 // Q&A but how do they get to execution of the SchurSolve::init ::solve?
 int main(int argv, char* argc[])
@@ -174,7 +167,13 @@ int main(int argv, char* argc[])
 
   ApplicationReturnStatus status;
 
-  //TODO: if rank == MASTER
+  Index N = -1;
+  if(argv > 2)
+  {
+    N = atoi(argc[2]);
+  } 
+
+  // if rank == MASTER
   if(mpi_rank == 0)
   {
 
@@ -203,7 +202,6 @@ int main(int argv, char* argc[])
       }
 
     SmartPtr<RegisteredTNLP> tnlp;
-    Index N;
 
     if (argv!=1) {
       // Create an instance of your nlp...
@@ -217,26 +215,7 @@ int main(int argv, char* argc[])
       N = atoi(argc[2]);
     }
     else {
-      bool done = false;
-      while (!done) {
-        string inputword;
-        cout << "Enter problem name (or \"list\" for all available names):\n";
-        cin >> inputword;
-        if (inputword=="list") {
-          print_problems();
-        }
-        else {
-          tnlp = RegisteredTNLPs::GetTNLP(inputword.c_str());
-          if (!IsValid(tnlp)) {
-            printf("Problem with name \"%s\" not known.\n", inputword.c_str());
-          }
-          else {
-            done = true;
-          }
-        }
-      }
-      cout << "Enter problem size:\n";
-      cin >> N;
+        print_problems();
     }
 
     if (N <= 0) {
@@ -270,17 +249,18 @@ int main(int argv, char* argc[])
 
     status = app->OptimizeTNLP(GetRawPtr(tnlp));
   }
-  else //TODO
+  else
   {
-    //my solver
-    int pardiso_mtype = -2; // symmetric H_i
-    int schur_factorization = 1;
-    // SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
-    // schurSolver.initSystem(KKT, nb, ng, nl, na, N);
-
-    // // Only master contains RHS with actual data at this point
-    // // it is communicated to children inside the solve
-    // schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);  // TODO: can be NULLs at child proc. 
+    // child process waits for master to initiate the solution phase
+    while(1) {
+      int pardiso_mtype = -2; // symmetric H_i
+      int schur_factorization = 1;
+      int NS = 2;
+      int nrhs = 1; //TODO
+      SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+      schurSolver.initSystem_OptimalControl(NULL, N, NS);
+      schurSolver.solveSystem(NULL, NULL, nrhs);
+    }
   }
 
   return (int) status;
