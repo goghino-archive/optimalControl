@@ -254,9 +254,11 @@ int main(int argv, char* argc[])
     // child process waits for master to initiate the solution phase
     while(1) {
       int pardiso_mtype = -2; // symmetric H_i
-      int schur_factorization = 1;
-      int NS = 2;
+      int schur_factorization = 1; //augmented factorization
+      int NS = 2; //TODO
       int nrhs = 1; //TODO
+      if (N!=10)
+        cout << "RUN WITH N=10" << endl; //because it is hardcoded to be 10 in IpPardisoSolverInterface
       SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
       schurSolver.initSystem_OptimalControl(NULL, N, NS);
       schurSolver.solveSystem(NULL, NULL, nrhs);

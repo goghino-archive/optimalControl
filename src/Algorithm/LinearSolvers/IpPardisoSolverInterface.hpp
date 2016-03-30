@@ -219,9 +219,6 @@ namespace Ipopt
                            Index nrhs,
                            double *rhs_vals);
     //@}
-
-    void writeToFile(const char* filename, int nrows, int ncols, int nonzeros, const int* pRows, const int* pCols, const double* pData);
-
   };
 
 } // namespace Ipopt

@@ -16,9 +16,9 @@
 
 #include "IpoptConfig.h"
 #include "IpPardisoSolverInterface.hpp"
-# include <math.h>
-#include <iostream> //writeToFile
-#include <fstream> //writeToFile
+#include <math.h>
+#include "SchurSolve.hpp"
+
 
 #ifdef HAVE_CSTDIO
 # include <cstdio>
@@ -547,34 +547,48 @@ namespace Ipopt
     printf("=====Inside PardisoSolverInterface::MultiSolve====\n");
 
     // check if a factorization has to be done
-    if (new_matrix) {
-      // perform the factorization
-      ESymSolverStatus retval;
-      retval = Factorization(ia, ja, check_NegEVals, numberOfNegEVals);
-      if (retval!=SYMSOLVER_SUCCESS) {
-        DBG_PRINT((1, "FACTORIZATION FAILED!\n"));
-        return retval;  // Matrix singular or error occurred
-      }
-    }
+    // if (new_matrix) {
+    //   // perform the factorization
+    //   ESymSolverStatus retval;
+    //   retval = Factorization(ia, ja, check_NegEVals, numberOfNegEVals);
+    //   if (retval!=SYMSOLVER_SUCCESS) {
+    //     DBG_PRINT((1, "FACTORIZATION FAILED!\n"));
+    //     return retval;  // Matrix singular or error occurred
+    //   }
+    // }
+    // // do the solve
+    //return Solve(ia, ja, nrhs, rhs_vals);
 
-    const char* filename = "/home/kardos/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat.csr";
-    writeToFile(filename, dim_, dim_, nonzeros_, ia, ja, a_);
-
-    // do the solve
-    return Solve(ia, ja, nrhs, rhs_vals);
-
-    //TODO
     int pardiso_mtype = -2; // symmetric H_i
     int schur_factorization = 1;
-    // SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
-    // // KKT = ij, ja, a_
-    // schurSolver.initSystem(KKT, nb, ng, nl, na, N);
+    CSRdouble* KKT = new CSRdouble((int)dim_, (int)dim_, (int)nonzeros_, ia, ja, a_);
+    KKT->writeToFile("/home/kardos/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat.csr");
+    KKT->fillSymmetricNew();
+    SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+    int N_ = 10; //TODO: get this parameter from file or some other way
+    int NS_ = 2;
+    //if (new_matrix) //TODO how to preserve schurSolver object between calls??
+    schurSolver.initSystem_OptimalControl(KKT, N_, NS_);
 
-    // // Only master contains RHS with actual data at this point
-    // // it is communicated to children inside the solve
-    // schurSolver.solveSystem(X.data, RHS.data, number_of_rhs);
-    // schurSolver.errorReport(number_of_rhs, *KKT, RHS.data, X.data);
-    // schurSolver.timingReport();    
+    // Only master contains RHS with actual data at this point
+    // it is communicated to children inside the solve
+    double* X = new double [dim_ * nrhs];
+    schurSolver.solveSystem(X, rhs_vals, nrhs);
+    schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
+    schurSolver.timingReport();  
+
+    // overwrite rhs by the solution
+    for (int i=0; i<dim_*nrhs ;i++)
+    {
+      rhs_vals[i] = X[i];
+    }
+
+    // clean up
+    delete [] X;
+    KKT->clear();
+    delete KKT;
+
+    return SYMSOLVER_SUCCESS;  
   }
 
   double* PardisoSolverInterface::GetValuesArrayPtr()
@@ -633,50 +647,6 @@ namespace Ipopt
 
     return SYMSOLVER_SUCCESS;
   }
-
-void PardisoSolverInterface::writeToFile(const char* filename, int nrows, int ncols, int nonzeros,
-                        const int* pRows, const int* pCols, const double* pData)
-{
-    std::cout << "\t---> Dumping matrix to file: " << filename << std::endl;
-
-    std::fstream fout(filename, std::ios::out);
-    if (!fout.is_open())
-    {
-        std::cout << "could not open file " << filename << " for output\n";
-        return;
-    }
-
-    fout << nrows << "\n";
-    fout << ncols << "\n";
-    fout << nonzeros << "\n";
-
-    #ifdef VERBOSE
-    cout << "nrows: " << nrows << std::endl;
-    cout << "ncols: " << ncols << std::endl;
-    cout << "nonzeros: " << nonzeros << std::endl;
-    #endif
-
-    int i;
-    for (i = 0; i < nrows+1; i++)
-    {
-        fout << pRows[i] << "\n";
-    }
-
-    for (i = 0; i < nonzeros; i++)
-    {
-        fout << pCols[i] << "\n";
-    }
-
-    fout.setf(std::ios::scientific, std::ios::floatfield);
-    fout.precision(16);
-
-    for (i = 0; i < nonzeros; i++)
-    {
-        fout << pData[i] << "\n";
-    }
-
-    fout.close();
-}
 
   static void
   write_iajaa_matrix (int     N,
