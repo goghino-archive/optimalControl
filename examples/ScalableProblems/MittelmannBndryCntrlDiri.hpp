@@ -49,7 +49,7 @@ using namespace Ipopt;
  *  the boundary, and therefore we don't need any explicit
  *  optimization variables for u.
  */
-class MittelmannBndryCntrlDiriBase : public RegisteredTNLP
+class MittelmannBndryCntrlDiriBase : public TNLP
 {
 public:
   /** Constructor. */
@@ -231,7 +231,7 @@ public:
   virtual ~MittelmannBndryCntrlDiri1()
   {}
 
-  virtual bool InitializeProblem(Index N)
+  bool InitializeProblem(Index N, Index NS)
   {
     if (N<1) {
       printf("N has to be at least 1.");
@@ -243,8 +243,8 @@ public:
     Number lb_u = 0.;
     Number ub_u = 10.;
     Number d_const = -20.;
-    Index scenarios_count = 2;
-    SetBaseParameters(scenarios_count, N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
+    //Index scenarios_count = 10;
+    SetBaseParameters(NS, N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
     return true;
   }
 protected:

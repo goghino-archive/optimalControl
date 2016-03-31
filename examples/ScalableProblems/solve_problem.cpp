@@ -78,84 +78,9 @@ extern "C" void* killer_thread(void* arg)
 using namespace Ipopt;
 using namespace std;
 
-// This could probably be done more elegant and automatically, but I
-// can't get it to work right now.  For now, list explicitly the
-// problems we want to include:
-#include "LuksanVlcek1.hpp"
-REGISTER_TNLP(LuksanVlcek1(0,0), LukVlE1)
-REGISTER_TNLP(LuksanVlcek1(-1.,0.), LukVlI1)
-#include "LuksanVlcek2.hpp"
-REGISTER_TNLP(LuksanVlcek2(0,0), LukVlE2)
-REGISTER_TNLP(LuksanVlcek2(-1.,0.), LukVlI2)
-#include "LuksanVlcek3.hpp"
-REGISTER_TNLP(LuksanVlcek3(0,0), LukVlE3)
-REGISTER_TNLP(LuksanVlcek3(-1.,0.), LukVlI3)
-#include "LuksanVlcek4.hpp"
-REGISTER_TNLP(LuksanVlcek4(0,0), LukVlE4)
-REGISTER_TNLP(LuksanVlcek4(-1.,0.), LukVlI4)
-#include "LuksanVlcek5.hpp"
-REGISTER_TNLP(LuksanVlcek5(0,0), LukVlE5)
-REGISTER_TNLP(LuksanVlcek5(-1.,0.), LukVlI5)
-#include "LuksanVlcek6.hpp"
-REGISTER_TNLP(LuksanVlcek6(0,0), LukVlE6)
-REGISTER_TNLP(LuksanVlcek6(-1.,0.), LukVlI6)
-#include "LuksanVlcek7.hpp"
-REGISTER_TNLP(LuksanVlcek7(0,0), LukVlE7)
-REGISTER_TNLP(LuksanVlcek7(-1.,0.), LukVlI7)
-
 
 #include "MittelmannBndryCntrlDiri.hpp"
-REGISTER_TNLP(MittelmannBndryCntrlDiri1, MBndryCntrl1)
-REGISTER_TNLP(MittelmannBndryCntrlDiri2, MBndryCntrl2)
-REGISTER_TNLP(MittelmannBndryCntrlDiri3, MBndryCntrl3)
-REGISTER_TNLP(MittelmannBndryCntrlDiri4, MBndryCntrl4)
 
-#include "MittelmannBndryCntrlDiri3D.hpp"
-REGISTER_TNLP(MittelmannBndryCntrlDiri3D, MBndryCntrl_3D)
-
-#include "MittelmannBndryCntrlDiri3D_27.hpp"
-REGISTER_TNLP(MittelmannBndryCntrlDiri3D_27, MBndryCntrl_3D_27)
-REGISTER_TNLP(MittelmannBndryCntrlDiri3D_27BT, MBndryCntrl_3D_27BT)
-
-#include "MittelmannBndryCntrlDiri3Dsin.hpp"
-REGISTER_TNLP(MittelmannBndryCntrlDiri3Dsin, MBndryCntrl_3Dsin)
-
-#include "MittelmannBndryCntrlNeum.hpp"
-REGISTER_TNLP(MittelmannBndryCntrlNeum1, MBndryCntrl5)
-REGISTER_TNLP(MittelmannBndryCntrlNeum2, MBndryCntrl6)
-REGISTER_TNLP(MittelmannBndryCntrlNeum3, MBndryCntrl7)
-REGISTER_TNLP(MittelmannBndryCntrlNeum4, MBndryCntrl8)
-
-#include "MittelmannDistCntrlDiri.hpp"
-REGISTER_TNLP(MittelmannDistCntrlDiri1, MDistCntrl1)
-REGISTER_TNLP(MittelmannDistCntrlDiri2, MDistCntrl2)
-REGISTER_TNLP(MittelmannDistCntrlDiri3, MDistCntrl3)
-REGISTER_TNLP(MittelmannDistCntrlDiri3a, MDistCntrl3a)
-
-#include "MittelmannDistCntrlNeumA.hpp"
-REGISTER_TNLP(MittelmannDistCntrlNeumA1, MDistCntrl4)
-REGISTER_TNLP(MittelmannDistCntrlNeumA2, MDistCntrl5)
-REGISTER_TNLP(MittelmannDistCntrlNeumA3, MDistCntrl6a)
-
-#include "MittelmannDistCntrlNeumB.hpp"
-REGISTER_TNLP(MittelmannDistCntrlNeumB1, MDistCntrl4a)
-REGISTER_TNLP(MittelmannDistCntrlNeumB2, MDistCntrl5a)
-REGISTER_TNLP(MittelmannDistCntrlNeumB3, MDistCntrl6)
-
-#include "MittelmannParaCntrl.hpp"
-REGISTER_TNLP(MittelmannParaCntrlBase<MittelmannParaCntrl5_1>, MPara5_1)
-REGISTER_TNLP(MittelmannParaCntrlBase<MittelmannParaCntrl5_2_1>, MPara5_2_1)
-REGISTER_TNLP(MittelmannParaCntrlBase<MittelmannParaCntrl5_2_2>, MPara5_2_2)
-REGISTER_TNLP(MittelmannParaCntrlBase<MittelmannParaCntrl5_2_3>, MPara5_2_3)
-
-static void print_problems()
-{
-  printf("\nList of all registered problems:\n\n");
-  RegisteredTNLPs::PrintRegisteredProblems();
-}
-
-// Only master process executes, child wait for the job from master (or jump to end in this case)
-// Q&A but how do they get to execution of the SchurSolve::init ::solve?
 int main(int argv, char* argc[])
 {
   
@@ -168,62 +93,32 @@ int main(int argv, char* argc[])
   ApplicationReturnStatus status;
 
   Index N = -1;
-  if(argv > 2)
+  Index NS = -1;
+  if(argv == 3)
   {
-    N = atoi(argc[2]);
+    N = atoi(argc[1]);
+    NS = atoi(argc[2]);
   } 
 
   // if rank == MASTER
   if(mpi_rank == 0)
   {
 
-    if (argv==2 && !strcmp(argc[1],"list")) {
-      print_problems();
+    if (argv != 3) {
+      cout << "Usage: $mpirun -n NP ./solve_problem N NS ";
       return 0;
     }
 
+    // Create an instance of your nlp...
+    SmartPtr<MittelmannBndryCntrlDiri1> tnlp = new MittelmannBndryCntrlDiri1();
 
 
-  #ifdef TIME_LIMIT
-    if (argv==4) {
-      int runtime = atoi(argc[3]);
-      pthread_t thread;
-      pthread_create(&thread, NULL, killer_thread, &runtime);
-    }
-    else
-  #endif
-      if (argv!=3 && argv!=1) {
-        printf("Usage: %s (this will ask for problem name)\n", argc[0]);
-        printf("       %s ProblemName N\n", argc[0]);
-        printf("          where N is a positive parameter determining problem size\n");
-        printf("       %s list\n", argc[0]);
-        printf("          to list all registered problems.\n");
-        return -1;
-      }
-
-    SmartPtr<RegisteredTNLP> tnlp;
-
-    if (argv!=1) {
-      // Create an instance of your nlp...
-      tnlp = RegisteredTNLPs::GetTNLP(argc[1]);
-      if (!IsValid(tnlp)) {
-        printf("Problem with name \"%s\" not known.\n", argc[1]);
-        print_problems();
-        return -2;
-      }
-
-      N = atoi(argc[2]);
-    }
-    else {
-        print_problems();
-    }
-
-    if (N <= 0) {
+    if (N <= 0 || NS <= 0) {
       printf("Given problem size is invalid.\n");
       return -3;
     }
 
-    bool retval = tnlp->InitializeProblem(N);
+    bool retval = tnlp->InitializeProblem(N, NS);
     if (!retval) {
       printf("Cannot initialize problem.  Abort.\n");
       return -4;
@@ -237,6 +132,10 @@ int main(int argv, char* argc[])
     app->Options()->SetNumericValue("tol", 1e-7);
     app->Options()->SetStringValue("mu_strategy", "adaptive");
     app->Options()->SetStringValue("output_file", "ipopt.out");
+    
+    // const std::string prefix = ""; Index nl;
+    // cout << "Retval:" << app->Options()->GetIntegerValue("problem_dimension", nl, prefix) << endl;
+    // cout << "problem_dimension: " << nl << endl;
     
     status = app->Initialize();
     if (status != Solve_Succeeded) {
@@ -257,8 +156,7 @@ int main(int argv, char* argc[])
       int schur_factorization = 1; //augmented factorization
       int NS = 2; //TODO
       int nrhs = 1; //TODO
-      if (N!=10)
-        cout << "RUN WITH N=10" << endl; //because it is hardcoded to be 10 in IpPardisoSolverInterface
+      
       SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
       schurSolver.initSystem_OptimalControl(NULL, N, NS);
       schurSolver.solveSystem(NULL, NULL, nrhs);
