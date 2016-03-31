@@ -117,15 +117,15 @@ public:
                                  Index n, const Number* x, const Number* z_L, const Number* z_U,
                                  Index m, const Number* g, const Number* lambda,
                                  Number obj_valu,
-				 const IpoptData* ip_data,
-				 IpoptCalculatedQuantities* ip_cq);
+         const IpoptData* ip_data,
+         IpoptCalculatedQuantities* ip_cq);
   //@}
 
 protected:
   /** Method for setting the internal parameters that define the
    *  problem. It must be called by the child class in its
    *  implementation of InitializeParameters. */
-  void SetBaseParameters(Index N, Number alpha, Number lb_y,
+  void SetBaseParameters(Index NS, Index N, Number alpha, Number lb_y,
                          Number ub_y, Number lb_u, Number ub_u,
                          Number d_const);
 
@@ -153,6 +153,8 @@ private:
 
   /**@name Problem specification */
   //@{
+  /** Number of scenarios for stochastic control*/
+  Index NS_;
   /** Number of mesh points in one dimension (excluding boundary) */
   Index N_;
   /** Step size */
@@ -179,10 +181,24 @@ private:
   /**@name Auxilliary methods */
   //@{
   /** Translation of mesh point indices to NLP variable indices for
-   *  y(x_ij) */
-  inline Index y_index(Index i, Index j) const
+   *  y(x_ij), not valid for boundary
+   *
+   *  (k)  -  scenario index
+   *  (i,j) - index within grid */
+  inline Index y_index(Index i, Index j, Index k) const
   {
-    return j + (N_+2)*i;
+    //offset to control variables
+    Index offset = NS_ * N_ * N_;
+    if(i<0)
+      return offset + 3*N_ + j; //West
+    if(i>=N_)
+      return offset + 2*N_ + j; //East
+    if(j<0)
+      return offset + 1*N_ + i; //South
+    if(j>=N_)
+      return offset        + i; //North
+
+    return (N_)*(N_)*k + (N_)*i + j;
   }
   /** Translation of interior mesh point indices to the corresponding
    *  PDE constraint number */
@@ -203,7 +219,9 @@ private:
   //@}
 };
 
+/***********************************/
 /** Class implementating Example 1 */
+/***********************************/
 class MittelmannBndryCntrlDiri1 : public MittelmannBndryCntrlDiriBase
 {
 public:
@@ -225,13 +243,15 @@ public:
     Number lb_u = 0.;
     Number ub_u = 10.;
     Number d_const = -20.;
-    SetBaseParameters(N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
+    Index scenarios_count = 2;
+    SetBaseParameters(scenarios_count, N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
     return true;
   }
 protected:
   /** Target profile function for y */
   virtual Number y_d_cont(Number x1, Number x2)  const
   {
+    //TODO: add random noise to x1, x2  
     return 3. + 5.*(x1*(x1-1.)*x2*(x2-1.));
   }
 private:
@@ -242,7 +262,9 @@ private:
   //@}
 };
 
+/***********************************/
 /** Class implementating Example 2 */
+/***********************************/
 class MittelmannBndryCntrlDiri2 : public MittelmannBndryCntrlDiriBase
 {
 public:
@@ -264,7 +286,8 @@ public:
     Number lb_u = 0.;
     Number ub_u = 10.;
     Number d_const = -20.;
-    SetBaseParameters(N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
+    Index scenarios_count = 2;
+    SetBaseParameters(scenarios_count, N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
     return true;
   }
 protected:
@@ -281,7 +304,9 @@ private:
   //@}
 };
 
+/***********************************/
 /** Class implementating Example 3 */
+/***********************************/
 class MittelmannBndryCntrlDiri3 : public MittelmannBndryCntrlDiriBase
 {
 public:
@@ -303,7 +328,8 @@ public:
     Number lb_u = 1.6;
     Number ub_u = 2.3;
     Number d_const = -20.;
-    SetBaseParameters(N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
+    Index scenarios_count = 2;
+    SetBaseParameters(scenarios_count, N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
     return true;
   }
 protected:
@@ -320,7 +346,9 @@ private:
   //@}
 };
 
+/***********************************/
 /** Class implementating Example 4 */
+/***********************************/
 class MittelmannBndryCntrlDiri4 : public MittelmannBndryCntrlDiriBase
 {
 public:
@@ -342,7 +370,8 @@ public:
     Number lb_u = 1.6;
     Number ub_u = 2.3;
     Number d_const = -20.;
-    SetBaseParameters(N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
+    Index scenarios_count = 2;
+    SetBaseParameters(scenarios_count, N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
     return true;
   }
 protected:
