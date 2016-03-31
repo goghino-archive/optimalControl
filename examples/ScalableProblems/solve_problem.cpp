@@ -154,7 +154,6 @@ int main(int argv, char* argc[])
     while(1) {
       int pardiso_mtype = -2; // symmetric H_i
       int schur_factorization = 1; //augmented factorization
-      int NS = 2; //TODO
       int nrhs = 1; //TODO
       
       SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
