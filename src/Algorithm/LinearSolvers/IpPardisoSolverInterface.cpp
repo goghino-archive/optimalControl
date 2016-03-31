@@ -160,6 +160,18 @@ namespace Ipopt
 
   void PardisoSolverInterface::RegisterOptions(SmartPtr<RegisteredOptions> roptions)
   {
+    roptions->AddIntegerOption(
+        "problem_dimension",
+        "Dimension of the grid for the single scenario",
+        0,
+        "The solver requires dimension of the grid N");
+
+    roptions->AddIntegerOption(
+        "problem_scenarios",
+        "Number of scenarios for stochastic optimization.",
+        0,
+        "The solver requires the number of the scenarios");
+
     // Todo Use keywords instead of integer numbers
     roptions->AddStringOption3(
       "pardiso_matching_strategy",
@@ -306,6 +318,11 @@ namespace Ipopt
   bool PardisoSolverInterface::InitializeImpl(const OptionsList& options,
       const std::string& prefix)
   {
+    options.GetIntegerValue("problem_dimension", N_, prefix);
+    options.GetIntegerValue("problem_scenarios", NS_, prefix);
+
+    printf("PardisoSolverPGInterface::InitializeImpl N %d, NS %d\n", N_, NS_); 
+
     Index enum_int;
     options.GetEnumValue("pardiso_matching_strategy", enum_int, prefix);
     match_strat_ = PardisoMatchingStrategy(enum_int);
@@ -538,13 +555,9 @@ namespace Ipopt
       bool check_NegEVals,
       Index numberOfNegEVals)
   {
-    printf("====SOLVING PROBLEM USING PARALLEL MPI SOLVER=====\n");
-
     DBG_START_METH("PardisoSolverInterface::MultiSolve",dbg_verbosity);
     DBG_ASSERT(!check_NegEVals || ProvidesInertia());
     DBG_ASSERT(initialized_);
-
-    printf("=====Inside PardisoSolverInterface::MultiSolve====\n");
 
     // check if a factorization has to be done
     // if (new_matrix) {
@@ -562,11 +575,9 @@ namespace Ipopt
     int pardiso_mtype = -2; // symmetric H_i
     int schur_factorization = 1;
     CSRdouble* KKT = new CSRdouble((int)dim_, (int)dim_, (int)nonzeros_, ia, ja, a_);
-    KKT->writeToFile("/home/kardos/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat.csr");
+    //KKT->writeToFile("/home/kardos/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat.csr");
     KKT->fillSymmetricNew();
     SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
-    int N_ = 10; //TODO: get this parameter from file or some other way
-    int NS_ = 2;
     //if (new_matrix) //TODO how to preserve schurSolver object between calls??
     schurSolver.initSystem_OptimalControl(KKT, N_, NS_);
 
@@ -575,7 +586,7 @@ namespace Ipopt
     double* X = new double [dim_ * nrhs];
     schurSolver.solveSystem(X, rhs_vals, nrhs);
     schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
-    schurSolver.timingReport();  
+    //schurSolver.timingReport();  
 
     // overwrite rhs by the solution
     for (int i=0; i<dim_*nrhs ;i++)

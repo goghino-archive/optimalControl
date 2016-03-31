@@ -117,6 +117,10 @@ namespace Ipopt
 
     /** Array for storing the values of the matrix. */
     double* a_;
+
+    /* Problem parameters, dimension of the single scenario grid and number of scenarios*/
+    Index N_;
+    Index NS_;
     //@}
 
 #ifdef PARDISO_MATCHING_PREPROCESS
