@@ -132,6 +132,8 @@ int main(int argv, char* argc[])
     app->Options()->SetNumericValue("tol", 1e-7);
     app->Options()->SetStringValue("mu_strategy", "adaptive");
     app->Options()->SetStringValue("output_file", "ipopt.out");
+    app->Options()->SetIntegerValue("problem_dimension", N);
+    app->Options()->SetIntegerValue("problem_scenarios", NS);
     
     // const std::string prefix = ""; Index nl;
     // cout << "Retval:" << app->Options()->GetIntegerValue("problem_dimension", nl, prefix) << endl;
