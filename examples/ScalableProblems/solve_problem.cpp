@@ -89,8 +89,12 @@ int main(int argv, char* argc[])
   int mpi_rank, mpi_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    
+  if (mpi_size < 2) {
+      printf("Run with minimum of two processes: mpirun -np 2 [...].\n");
+      return -3;
+  }
 
-  ApplicationReturnStatus status;
 
   Index N = -1;
   Index NS = -1;
@@ -139,7 +143,7 @@ int main(int argv, char* argc[])
     // cout << "Retval:" << app->Options()->GetIntegerValue("problem_dimension", nl, prefix) << endl;
     // cout << "problem_dimension: " << nl << endl;
     
-    status = app->Initialize();
+    ApplicationReturnStatus status = app->Initialize();
     if (status != Solve_Succeeded) {
       printf("\n\n*** Error during initialization!\n");
       return (int) status;
@@ -164,5 +168,7 @@ int main(int argv, char* argc[])
     }
   }
 
-  return (int) status;
+  mpi_check(MPI_Finalize());
+  
+  return 0;
 }
