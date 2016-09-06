@@ -242,6 +242,8 @@ public:
     Number ub_y = 3.5;
     Number lb_u = 0.;
     Number ub_u = 10.;
+    //Number lb_u = 1.6;
+    //Number ub_u = 2.3;
     Number d_const = -20.;
     //Index scenarios_count = 10;
     SetBaseParameters(NS, N, alpha, lb_y, ub_y, lb_u, ub_u, d_const);
@@ -253,6 +255,7 @@ protected:
   {
     //TODO: add random noise to x1, x2  
     return 3. + 5.*(x1*(x1-1.)*x2*(x2-1.));
+    //return 3. + 5.*(x1*x1*(x1-1.)*x2*(x2-1.));
   }
 private:
   /**@name hide implicitly defined contructors copy operators */

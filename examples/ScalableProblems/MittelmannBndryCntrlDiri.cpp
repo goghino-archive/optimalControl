@@ -8,6 +8,7 @@
 //                  based on MyNLP.cpp
 
 #include "MittelmannBndryCntrlDiri.hpp"
+#include <cstdlib>
 
 #ifdef HAVE_CASSERT
 # include <cassert>
@@ -54,7 +55,8 @@ MittelmannBndryCntrlDiriBase::SetBaseParameters(Index NS, Index N, Number alpha,
   for (Index k=0; k<NS_; k++) {
     for (Index i=0; i< N_; i++) {
       for (Index j=0; j< N_; j++) {
-        y_d_[y_index(i,j,k)] = y_d_cont(x1_grid(i+1),x2_grid(j+1)); //TODO: add noise, sum error also on boundary to dirichlet cond.
+        double r = rand()/RAND_MAX;
+        y_d_[y_index(i,j,k)] = y_d_cont(x1_grid(i+1),x2_grid(j+1)) + r; //TODO: add noise, sum error also on boundary to dirichlet cond.
       }
     }
   }
@@ -433,21 +435,47 @@ MittelmannBndryCntrlDiriBase::finalize_solution(SolverReturn status,
     const IpoptData* ip_data,
     IpoptCalculatedQuantities* ip_cq)
 {
-    FILE* fp1 = fopen("solution1.txt", "w+"); 
-    FILE* fp2 = fopen("solution2.txt", "w+");
-    FILE* fp3 = fopen("solution3.txt", "w+");
-    FILE* fp4 = fopen("solution4.txt", "w+");
+    int NS_MAX = 4; //DO NOT CHANGE THIS, OR CHANGE ALSO THE REST OF THE CODE!!!
+    
+    FILE* fp1 = fopen("solution1.txt", "w"); 
+    FILE* fp2 = fopen("solution2.txt", "w");
+    FILE* fp3 = fopen("solution3.txt", "w");
+    FILE* fp4 = fopen("solution4.txt", "w");
+    FILE* files[4];
+    files[0]=fp1;
+    files[1]=fp2;
+    files[2]=fp3;
+    files[3]=fp4;
 
+    Index u_offset = NS_*N_*N_ ;
+    for (Index k=0; k<NS_MAX; k++) {
 
-    Index offset = NS_*N_*N_ ;
-    for (Index k=0; k<NS_; k++) {
+        fprintf(files[k], "%15.8e ", x[u_offset+4*N_]);      // North-West corner
         for (Index i=0; i<N_; i++) {
-            fprintf(fp1, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset + i]);      // North
-            fprintf(fp2, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+N_ + i]);   // South
-            fprintf(fp3, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+2*N_ + i]); // East
-            fprintf(fp4, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+3*N_ + i]); // West
-            //fprintf(fp, "y[%6d,%6d] = %15.8e\n", i, j, x[y_index(i,j,k)]);
+            fprintf(files[k], "%15.8e ", x[u_offset + i]);      // North boundary
         }
+        fprintf(files[k], "%15.8e\n", x[u_offset+4*N_]);      // North-East corner
+
+        for (Index i=0; i<N_; i++) {
+            fprintf(files[k], "%15.8e ", x[u_offset+3*N_ + i]);  // West boundary
+            for (Index j=0; j<N_; j++) {
+                fprintf(files[k], "%15.8e ", x[y_index(i,j,k)]);      // value of the state
+
+                //fprintf(fp1, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset + i]);      // North
+                //fprintf(fp2, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+N_ + i]);   // South
+                //fprintf(fp3, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+2*N_ + i]); // East
+                //fprintf(fp4, "%15.8e %15.8e\n", i*h_ + 1.*k, x[offset+3*N_ + i]); // West
+            }
+            fprintf(files[k], "%15.8e", x[u_offset+2*N_ + i]);  // East boundary
+            fprintf(files[k],"\n");
+        }
+
+        fprintf(files[k], "%15.8e ", x[u_offset+4*N_]);      // South-West corner
+        for (Index i=0; i<N_; i++) {
+            fprintf(files[k], "%15.8e ", x[u_offset+N_ + i]);      // South boundary
+        }
+        fprintf(files[k], "%15.8e\n", x[u_offset+4*N_]);      // South-East corner
+
     }
 
     fclose(fp1);
