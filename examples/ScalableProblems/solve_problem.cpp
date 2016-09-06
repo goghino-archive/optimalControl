@@ -171,12 +171,12 @@ int main(int argv, char* argc[])
     else
     {
         // child process waits for master to initiate the solution phase
+        int pardiso_mtype = -2; // symmetric H_i
+        int schur_factorization = 1; //augmented factorization
+        SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+        
         while(1) {
-            int pardiso_mtype = -2; // symmetric H_i
-            int schur_factorization = 1; //augmented factorization
             int nrhs = 1; //TODO
-
-            SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
             schurSolver.initSystem_OptimalControl(NULL, N, NS);
             schurSolver.solveSystem(NULL, NULL, nrhs);
         }

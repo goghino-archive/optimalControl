@@ -17,7 +17,6 @@
 #include "IpoptConfig.h"
 #include "IpPardisoSolverInterface.hpp"
 #include <math.h>
-#include "SchurSolve.hpp"
 
 
 #ifdef HAVE_CSTDIO
@@ -100,8 +99,12 @@ namespace Ipopt
       :
       a_(NULL),
       negevals_(-1),
-      initialized_(false)
+      initialized_(false),
+      schurSolver(-2, 1) //equivalent to commented code below
   {
+    //const int pardiso_mtype = -2; // symmetric H_i
+    //const int schur_factorization = 1;
+    //schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
     DBG_START_METH("PardisoSolverInterface::PardisoSolverInterface()",dbg_verbosity);
   }
 
@@ -174,20 +177,24 @@ namespace Ipopt
     // // do the solve
     //return Solve(ia, ja, nrhs, rhs_vals);
 
-    int pardiso_mtype = -2; // symmetric H_i
-    int schur_factorization = 1;
     CSRdouble* KKT = new CSRdouble((int)dim_, (int)dim_, (int)nonzeros_, ia, ja, a_);
     //KKT->writeToFile("/home/kardos/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat.csr");
     KKT->fillSymmetricNew();
-    SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
-    //if (new_matrix) //TODO how to preserve schurSolver object between calls??
-    schurSolver.initSystem_OptimalControl(KKT, N_, NS_);
+    if (new_matrix) //TODO how to preserve schurSolver object between calls??
+    {
+        printf("NEW MATRIX\n");
+    }
+    else
+    {
+        printf("REUSING MATRIX\n");
+    }
+     schurSolver.initSystem_OptimalControl(KKT, N_, NS_);
 
     // Only master contains RHS with actual data at this point
     // it is communicated to children inside the solve
     double* X = new double [dim_ * nrhs];
     schurSolver.solveSystem(X, rhs_vals, nrhs);
-    schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
+    //schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
     //schurSolver.timingReport();  
 
     // overwrite rhs by the solution

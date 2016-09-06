@@ -11,6 +11,7 @@
 #define __IPPARDISOSOLVERINTERFACE_HPP__
 
 #include "IpSparseSymLinearSolverInterface.hpp"
+#include "SchurSolve.hpp"
 
 //#define PARDISO_MATCHING_PREPROCESS
 
@@ -122,6 +123,9 @@ namespace Ipopt
     Index N_;
     Index NS_;
     //@}
+
+    // Schur solver
+    SchurSolve schurSolver;
 
     /** @name Information about most recent factorization/solve */
     //@{
