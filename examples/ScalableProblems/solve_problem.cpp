@@ -60,18 +60,22 @@
 
 extern "C" void* killer_thread(void* arg)
 {
-  int runtime = *reinterpret_cast<int *>(arg);
-  if (runtime <= 0) {
-    printf("Invalid argument for run time (%d)\n", runtime);
-    exit(-100);
-  }
-  printf("Limiting wall clock time to %d seconds.\n", runtime);
-  sleep(runtime);
-  printf("EXIT: Exceeding wall clock time limit of %d seconds.\n", runtime);
-  exit(-999);
-  return NULL;
+    int runtime = *reinterpret_cast<int *>(arg);
+    if (runtime <= 0) {
+        printf("Invalid argument for run time (%d)\n", runtime);
+        exit(-100);
+    }
+    printf("Limiting wall clock time to %d seconds.\n", runtime);
+    sleep(runtime);
+    printf("EXIT: Exceeding wall clock time limit of %d seconds.\n", runtime);
+    exit(-999);
+    return NULL;
 }
 #endif
+
+//headers for GDB attaching code
+#include <unistd.h>
+
 //**********************************************************************
 
 
@@ -83,92 +87,102 @@ using namespace std;
 
 int main(int argv, char* argc[])
 {
-  
-  mpi_check(MPI_Init(&argv, &argc));
-  
-  int mpi_rank, mpi_size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-    
-  if (mpi_size < 2) {
-      printf("Run with minimum of two processes: mpirun -np 2 [...].\n");
-      return -3;
-  }
 
+    mpi_check(MPI_Init(&argv, &argc));
 
-  Index N = -1;
-  Index NS = -1;
-  if(argv == 3)
-  {
-    N = atoi(argc[1]);
-    NS = atoi(argc[2]);
-  } 
+    /* workaround to attach GDB */
+    int i = 0;
+    char hostname[256];
+    gethostname(hostname, sizeof(hostname));
+    printf("Process with PID %d on %s ready to run\n", getpid(), hostname);
+    fflush(stdout);
+    //after attaching: $(gdb) set var i = 7
+    //while (0 == i)
+    //    sleep(5);
 
-  // if rank == MASTER
-  if(mpi_rank == 0)
-  {
+    int mpi_rank, mpi_size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    if (argv != 3) {
-      cout << "Usage: $mpirun -n NP ./solve_problem N NS ";
-      return 0;
+    if (mpi_size < 2) {
+        printf("Run with minimum of two processes: mpirun -np 2 [...].\n");
+        return -3;
     }
 
-    // Create an instance of your nlp...
-    SmartPtr<MittelmannBndryCntrlDiri1> tnlp = new MittelmannBndryCntrlDiri1();
+
+    Index N = -1;
+    Index NS = -1;
+    if(argv == 3)
+    {
+        N = atoi(argc[1]);
+        NS = atoi(argc[2]);
+    } 
+
+    // if rank == MASTER
+    if(mpi_rank == 0)
+    {
+
+        if (argv != 3) {
+            cout << "Usage: $mpirun -n NP ./solve_problem N NS ";
+            return 0;
+        }
+
+        // Create an instance of your nlp...
+        SmartPtr<MittelmannBndryCntrlDiri1> tnlp = new MittelmannBndryCntrlDiri1();
 
 
-    if (N <= 0 || NS <= 0) {
-      printf("Given problem size is invalid.\n");
-      return -3;
+        if (N <= 0 || NS <= 0) {
+            printf("Given problem size is invalid.\n");
+            return -3;
+        }
+
+        bool retval = tnlp->InitializeProblem(N, NS);
+        if (!retval) {
+            printf("Cannot initialize problem.  Abort.\n");
+            return -4;
+        }
+
+        // Create an instance of the IpoptApplication
+        // We are using the factory, since this allows us to compile this
+        // example with an Ipopt Windows DLL
+        SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
+
+        app->Options()->SetNumericValue("tol", 1e-7);
+        app->Options()->SetStringValue("mu_strategy", "adaptive");
+        app->Options()->SetStringValue("output_file", "ipopt.out");
+        app->Options()->SetIntegerValue("problem_dimension", N);
+        app->Options()->SetIntegerValue("problem_scenarios", NS);
+
+        // const std::string prefix = ""; Index nl;
+        // cout << "Retval:" << app->Options()->GetIntegerValue("problem_dimension", nl, prefix) << endl;
+        // cout << "problem_dimension: " << nl << endl;
+
+        ApplicationReturnStatus status = app->Initialize();
+        if (status != Solve_Succeeded) {
+            printf("\n\n*** Error during initialization!\n");
+            return (int) status;
+        }
+        // Set option to use internal scaling
+        // DOES NOT WORK FOR VLUKL* PROBLEMS:
+        // app->Options()->SetStringValueIfUnset("nlp_scaling_method", "user-scaling");
+
+        status = app->OptimizeTNLP(GetRawPtr(tnlp));
+    }
+    else
+    {
+        // child process waits for master to initiate the solution phase
+        while(1) {
+            int pardiso_mtype = -2; // symmetric H_i
+            int schur_factorization = 1; //augmented factorization
+            int nrhs = 1; //TODO
+
+            SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+            schurSolver.initSystem_OptimalControl(NULL, N, NS);
+            schurSolver.solveSystem(NULL, NULL, nrhs);
+        }
     }
 
-    bool retval = tnlp->InitializeProblem(N, NS);
-    if (!retval) {
-      printf("Cannot initialize problem.  Abort.\n");
-      return -4;
-    }
+    mpi_check(MPI_Finalize());
 
-    // Create an instance of the IpoptApplication
-    // We are using the factory, since this allows us to compile this
-    // example with an Ipopt Windows DLL
-    SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
-
-    app->Options()->SetNumericValue("tol", 1e-7);
-    app->Options()->SetStringValue("mu_strategy", "adaptive");
-    app->Options()->SetStringValue("output_file", "ipopt.out");
-    app->Options()->SetIntegerValue("problem_dimension", N);
-    app->Options()->SetIntegerValue("problem_scenarios", NS);
-    
-    // const std::string prefix = ""; Index nl;
-    // cout << "Retval:" << app->Options()->GetIntegerValue("problem_dimension", nl, prefix) << endl;
-    // cout << "problem_dimension: " << nl << endl;
-    
-    ApplicationReturnStatus status = app->Initialize();
-    if (status != Solve_Succeeded) {
-      printf("\n\n*** Error during initialization!\n");
-      return (int) status;
-    }
-    // Set option to use internal scaling
-    // DOES NOT WORK FOR VLUKL* PROBLEMS:
-    // app->Options()->SetStringValueIfUnset("nlp_scaling_method", "user-scaling");
-
-    status = app->OptimizeTNLP(GetRawPtr(tnlp));
-  }
-  else
-  {
-    // child process waits for master to initiate the solution phase
-    while(1) {
-      int pardiso_mtype = -2; // symmetric H_i
-      int schur_factorization = 1; //augmented factorization
-      int nrhs = 1; //TODO
-      
-      SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
-      schurSolver.initSystem_OptimalControl(NULL, N, NS);
-      schurSolver.solveSystem(NULL, NULL, nrhs);
-    }
-  }
-
-  mpi_check(MPI_Finalize());
-  
-  return 0;
+    return 0;
 }
