@@ -174,10 +174,22 @@ int main(int argv, char* argc[])
         int pardiso_mtype = -2; // symmetric H_i
         int schur_factorization = 1; //augmented factorization
         SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+        //printf("-------------Initializing Schur Solver at child-----------\n");
+        schurSolver.initSystem_OptimalControl(NULL, N, NS, NULL);
         
         while(1) {
-            int nrhs = 1; //TODO
-            schurSolver.initSystem_OptimalControl(NULL, N, NS);
+            //get flag new_matrix to child processes
+            bool new_matrix;
+            MPI_Bcast(&new_matrix, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
+
+            //update system if necessary
+            if(new_matrix)
+            {
+                //printf("--------------Updating system at child-----------\n");
+                schurSolver.updateSystem(NULL);
+            }
+
+            int nrhs = 1;
             schurSolver.solveSystem(NULL, NULL, nrhs);
         }
     }

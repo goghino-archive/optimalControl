@@ -16,6 +16,7 @@
 
 #include "IpoptConfig.h"
 #include "IpPardisoSolverInterface.hpp"
+#include <mpi.h>
 #include <math.h>
 
 
@@ -164,37 +165,45 @@ namespace Ipopt
     DBG_ASSERT(!check_NegEVals || ProvidesInertia());
     DBG_ASSERT(initialized_);
 
-    // check if a factorization has to be done
-    // if (new_matrix) {
-    //   // perform the factorization
-    //   ESymSolverStatus retval;
-    //   retval = Factorization(ia, ja, check_NegEVals, numberOfNegEVals);
-    //   if (retval!=SYMSOLVER_SUCCESS) {
-    //     DBG_PRINT((1, "FACTORIZATION FAILED!\n"));
-    //     return retval;  // Matrix singular or error occurred
-    //   }
-    // }
-    // // do the solve
-    //return Solve(ia, ja, nrhs, rhs_vals);
-
     CSRdouble* KKT = new CSRdouble((int)dim_, (int)dim_, (int)nonzeros_, ia, ja, a_);
-    //KKT->writeToFile("/home/kardos/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat.csr");
-    KKT->fillSymmetricNew();
-    if (new_matrix) //TODO how to preserve schurSolver object between calls??
+
+#ifdef DEBUG
+    char buffer[200];
+    sprintf (buffer, "~/Ipopt-3.12.4/build_mpi/Ipopt/examples/ScalableProblems/PardisoMat_%d_%d.csr", N_, NS_);
+    KKT->writeToFile(buffer);
+#endif
+    
+    int *index_a = NULL;
+    KKT->fillSymmetricNew(index_a);
+
+
+    static int initialized = 0;
+    if(!initialized)
     {
-        printf("NEW MATRIX\n");
+        //printf("-------------Initializing Schur Solver at master-----------\n");
+        schurSolver.initSystem_OptimalControl(KKT, N_, NS_, index_a);
+        initialized = 1;
+        new_matrix = 0; // new matrix is set by calling initSystem, no need to call update
+    }
+   
+    //broadcast flag new_matrix to child processes
+    MPI_Bcast(&new_matrix, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
+
+    if (new_matrix) 
+    {
+        //printf("--------------Updating system at master-----------\n");
+        schurSolver.updateSystem(a_);
     }
     else
     {
-        printf("REUSING MATRIX\n");
+        //printf("----------------REUSING MATRIX---------------------\n");
     }
-     schurSolver.initSystem_OptimalControl(KKT, N_, NS_);
 
     // Only master contains RHS with actual data at this point
     // it is communicated to children inside the solve
     double* X = new double [dim_ * nrhs];
     schurSolver.solveSystem(X, rhs_vals, nrhs);
-    //schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
+    schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
     //schurSolver.timingReport();  
 
     // overwrite rhs by the solution
