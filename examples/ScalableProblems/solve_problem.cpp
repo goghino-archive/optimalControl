@@ -178,6 +178,12 @@ int main(int argv, char* argc[])
         schurSolver.initSystem_OptimalControl(NULL, N, NS, NULL);
         
         while(1) {
+            //do test on termination, set by master process
+            int terminate = 0;
+            MPI_Bcast(&terminate, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            if (terminate)
+                break;
+            
             //get flag new_matrix to child processes
             bool new_matrix;
             MPI_Bcast(&new_matrix, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);

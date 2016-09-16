@@ -8,6 +8,7 @@
 //                  based on MyNLP.cpp
 
 #include "MittelmannBndryCntrlDiri.hpp"
+#include <mpi.h>
 #include <cstdlib>
 
 #ifdef HAVE_CASSERT
@@ -435,6 +436,10 @@ MittelmannBndryCntrlDiriBase::finalize_solution(SolverReturn status,
     const IpoptData* ip_data,
     IpoptCalculatedQuantities* ip_cq)
 {
+    //broadcast information to worker processes to terminate
+    int terminate = 1;
+    MPI_Bcast(&terminate, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
     int NS_MAX = 4; //DO NOT CHANGE THIS, OR CHANGE ALSO THE REST OF THE CODE!!!
     
     FILE* fp1 = fopen("solution1.txt", "w"); 

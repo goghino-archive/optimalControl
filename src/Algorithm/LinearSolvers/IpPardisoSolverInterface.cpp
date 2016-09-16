@@ -185,7 +185,11 @@ namespace Ipopt
         initialized = 1;
         new_matrix = 0; // new matrix is set by calling initSystem, no need to call update
     }
-   
+
+    //broadcast flag that the solution is not yet found
+    int terminate = 0;
+    MPI_Bcast(&terminate, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
     //broadcast flag new_matrix to child processes
     MPI_Bcast(&new_matrix, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
 
