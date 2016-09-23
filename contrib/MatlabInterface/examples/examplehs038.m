@@ -12,12 +12,6 @@
 %         September 18, 2008
 function [x, info] = examplehs038
 
-  err = mpi_init();
-  [mpi_rank, mpi_size] = mpi_info();
-
-  mpi_rank
-  mpi_size
-
   x0         = [-3  -1  -3  -1];   % The starting point.
   options.lb = [-10 -10 -10 -10];  % Lower bound on the variables.
   options.ub = [+10 +10 +10 +10];  % Upper bound on the variables.
