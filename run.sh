@@ -5,6 +5,8 @@
 # These parameter has to match with runtime parameters of the solve_problems
 # $ mpirun -n NP ./solve_problem N NS, where N NS has to be same in the ipopt.opt
 
+MPIRUN=/home/kardos/openmpi-2.0.0/bin/mpirun
+
 # check command line arguments
 if [ $# -ne 3 ]; then
     echo 'Usage: $./run.sh NP N NS'
@@ -23,4 +25,4 @@ else
     echo "problem_scenarios $NS" >> ipopt.opt
 fi
 
-mpirun -n $NP ./solve_problem $N $NS
+${MPIRUN} -np $NP ./solve_problem $N $NS
