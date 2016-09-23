@@ -27,7 +27,7 @@ CXXLINKFLAGS = @RPATH_FLAGS@
 LIB = libscalexamples.@LIBEXT@
 
 # Linker flags
-@COIN_HAS_PKGCONFIG_TRUE@LIBS = -dynamic $(LIB) `PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ @PKG_CONFIG@ --libs ipopt`
+@COIN_HAS_PKGCONFIG_TRUE@LIBS = -static $(LIB) `PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ @PKG_CONFIG@ --libs ipopt`
 @COIN_HAS_PKGCONFIG_FALSE@@COIN_CXX_IS_CL_TRUE@LIBS = -dynamic $(LIB) -link -libpath:`$(CYGPATH_W) @abs_lib_dir@` libipopt.lib @IPOPTLIB_LIBS_INSTALLED@
 @COIN_HAS_PKGCONFIG_FALSE@@COIN_CXX_IS_CL_FALSE@LIBS = -dynamic $(LIB) -L@abs_lib_dir@ -lipopt @IPOPTLIB_LIBS_INSTALLED@
 
@@ -100,6 +100,18 @@ CYGPATH_W = @CYGPATH_W@
 
 # Add include paht to the SchurSolver
 INCL += -I../../../../Ipopt/src/Algorithm/LinearSolvers
+INCL += -I/home/kardos/openmpi-2.0.0/include
+
+#provide necessary libraries to statically link with MPI (libmpi.a and its helpers)
+CXXLINKFLAGS += -L/home/kardos/openmpi-2.0.0/lib
+LIBS +=  -lmpi
+LIBS += -lopen-rte #MPI helpers
+LIBS += -lopen-pal #MPI helpers
+LIBS += -lrt #some system utils
+LIBS += -libverbs #some system utils
+LIBS += -lnuma #???some Linux libs do not have static versions(e.g., libnuma)
+LIBS += -lutil #some dependency from open-pal
+LIBS += /usr/lib/gcc/x86_64-linux-gnu/5/libquadmath.a #fortran write dependency
 
 $(EXE): $(MAINOBJ) $(LIB)
 	$(CXX) $(CXXFLAGS) $(CXXLINKFLAGS) -o $@ $(MAINOBJ) $(LIBS)
