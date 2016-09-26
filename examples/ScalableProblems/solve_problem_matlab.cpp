@@ -4,6 +4,7 @@
 #include <stdlib.h>     /* exit, EXIT_FAILURE */
 #include <unistd.h>     /* gethostname */
 #include "SchurSolve.hpp"
+#include "engine.h"
 
 using namespace std;
 
@@ -52,11 +53,18 @@ int main(int argv, char* argc[])
         }
    
         //call matlab
-        char comm[500] = "matlab -nosplash -nodisplay -nojvm -nodesktop -r \"ipoptex\"";
+        // char comm[500] = "matlab -nosplash -nodisplay -nojvm -nodesktop -r \"ipoptex\"";
+        // cout << "Calling the command: " << comm  << " at the MASTER node"<< endl;
+        // system(comm);
 
-        cout << "Calling the command: " << comm  << " at the MASTER node"<< endl;
-        system(comm);
+        Engine* ep;
+        if (!(ep = engOpen("")))
+        {
+            fprintf(stderr, "\n *** Can't start MATLAB engine! *** \n");
+            return EXIT_FAILURE;
+        }
 
+        engEvalString(ep, "ipoptex");
     }
     else
     {
