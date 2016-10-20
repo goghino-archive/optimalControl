@@ -100,10 +100,10 @@ CYGPATH_W = @CYGPATH_W@
 
 # Add include paht to the SchurSolver
 INCL += -I../../../../Ipopt/src/Algorithm/LinearSolvers
-INCL += -I/home/kardos/openmpi-2.0.0/include
+INCL += -I/home/kardos/openmpi/include
 
 #provide necessary libraries to statically link with MPI (libmpi.a and its helpers)
-CXXLINKFLAGS += -L/home/kardos/openmpi-2.0.0/lib
+CXXLINKFLAGS += -L/home/kardos/openmpi/lib
 LIBS +=  -lmpi
 LIBS += -lopen-rte #MPI helpers
 LIBS += -lopen-pal #MPI helpers

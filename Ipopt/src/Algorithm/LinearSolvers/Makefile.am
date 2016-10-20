@@ -72,7 +72,7 @@ AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/../../Common` \
 	-I`$(CYGPATH_W) $(srcdir)/..` \
 	-I`$(CYGPATH_W) $(srcdir)/../../Interfaces` \
 	-I`$(CYGPATH_W) $(srcdir)/../../contrib/CGPenalty` \
-	-I`$(CYGPATH_W) /home/kardos/openmpi-2.0.0/include` \
+	-I`$(CYGPATH_W) /home/kardos/openmpi/include` \
 	$(MUMPS_CFLAGS) $(HSL_CFLAGS)
 
 # This line is necessary to allow VPATH compilation

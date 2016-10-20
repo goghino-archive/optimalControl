@@ -1,8 +1,9 @@
 #!/bin/bash
 #MKLROOT=/opt/intel/mkl/lib/intel64 #old version
-MKLROOT=/opt/intel/compilers_and_libraries_2016.2.181/linux/mkl
+#MKLROOT=/opt/intel/compilers_and_libraries_2016.2.181/linux/mkl
+MKLROOT=/opt/intel/compilers_and_libraries_2017/linux/mkl
 MKLIB=-L${MKLROOT}
-PARDISOLIB=/home/drosos/Libraries/linuxAMD64
+PARDISOLIB=/home/kardos/lib/pardiso
 
 #MPI_CC=/home/kardos/openmpi-2.0.0/bin/mpicc
 #MPI_CXX=/home/kardos/openmpi-2.0.0/bin/mpic++

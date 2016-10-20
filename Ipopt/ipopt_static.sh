@@ -1,6 +1,7 @@
 #!/bin/bash
-PARDISO_DIR=/home/drosos/pardiso_gnu
-MKLROOT=/opt/intel/compilers_and_libraries_2016.2.181/linux/mkl
+PARDISO_DIR=/home/kardos/lib/pardiso
+#MKLROOT=/opt/intel/compilers_and_libraries_2016.2.181/linux/mkl
+MKLROOT=/opt/intel/compilers_and_libraries_2017/linux/mkl
 
 ../configure ADD_CXXFLAGS="-fPIC -fopenmp -m64" F77=gfortran CC=gcc CXX=g++ \
     --enable-static --enable-inexact-solver --disable-shared --with-pic \
