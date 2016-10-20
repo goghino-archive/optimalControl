@@ -1,5 +1,72 @@
+**********************************************************************
+***                        CONFIGURATION                           ***
+**********************************************************************
+Go into the directory that you just downloaded or extracted (e.g., Ipopt-3.3.1),
+create the build directory and use the script to configure Ipopt
 
-To install this package, please look at the INSTALL file. 
+   ./ipopt_static for static version
+   of
+   ./ipopt_setup for dynamic version
+
+Note that you might have to specify additional options, in case you
+don't want to use the default choices that configure makes (e.g.,
+compilers). In any case, you need to provide path to the Pardiso
+library and MKL:
+
+PARDISO_DIR = /home/drosos/pardiso_gnu
+MKLROOT = /opt/intel/compilers_and_libraries_2017/linux/mkl
+
+and manualy provide path to mpi installation in the Makefile.in files:
+/home/kardos/Ipopt-3.12.4/Ipopt/examples/ScalableProblems/Makefile.in
+and
+/home/kardos/Ipopt-3.12.4/Ipopt/src/Algorithm/LinearSolvers/Makefile.in
+
+If everything went fine, you will see at the end of the output
+
+   "Main configuration of Ipopt successful"
+
+**********************************************************************
+***                COMPILATION AND INSTALLATION                    ***
+**********************************************************************
+
+In the directory where you ran the configure script:
+
+1. Compile the code by typing
+
+   make -j4
+
+2. To test if the code works, you can type
+
+   make test
+
+3. To install the code, you type
+
+   make install
+
+   After this, you will find the executables, libraries and header
+   files in the "bin", "lib" and "include" subdirectory, respectively.
+
+More information on the compilation and installation can be found at
+
+   https://projects.coin-or.org/BuildTools/wiki/user-compile
+
+**********************************************************************
+***                     USING THE LIBRARIES                        ***
+**********************************************************************
+
+Now you can link your own code with the installed libraries.  You can
+find examples in the subdirectory
+
+   Ipopt/examples/ScalableProblems
+
+First, build the example by typing 
+
+   make
+
+and to run the example use the run.sh script, for example
+
+   ./run.sh 2 10 2
+
 
 This package contains several subdirectories corresponding to COIN-OR
 projects (www.coin-or.org). The AUTHORS, LICENSE and README files in 
