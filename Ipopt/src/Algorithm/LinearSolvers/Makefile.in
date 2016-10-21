@@ -89,14 +89,7 @@ am__liblinsolvers_la_SOURCES_DIST = IpGenKKTSolverInterface.hpp \
 	IpMa28Partition.F IpWsmpSolverInterface.cpp \
 	IpWsmpSolverInterface.hpp IpIterativeWsmpSolverInterface.cpp \
 	IpIterativeWsmpSolverInterface.hpp IpMumpsSolverInterface.cpp \
-	IpMumpsSolverInterface.hpp \
-	SchurSolve.cpp SchurSolve.hpp \
-	Partition.cpp Partition.hpp \
-	ParDiSO.cpp ParDiSO.hpp \
-	PardisoParameters.cpp PardisoParameters.hpp \
-	readdata.cpp readdata.hpp \
-	CSRdouble.cpp CSRdouble.hpp \
-	Matrix2D.cpp Matrix2D.hpp
+	IpMumpsSolverInterface.hpp 
 
 @BUILD_LINEARSOLVERLOADER_TRUE@am__objects_1 =  \
 @BUILD_LINEARSOLVERLOADER_TRUE@	IpPardisoSolverInterface.lo \
@@ -112,18 +105,17 @@ am_liblinsolvers_la_OBJECTS = IpLinearSolversRegOp.lo \
 	IpMa27TSolverInterface.lo IpMa57TSolverInterface.lo \
 	IpMa86SolverInterface.lo IpMa97SolverInterface.lo \
 	IpMc19TSymScalingMethod.lo IpMa28TDependencyDetector.lo \
-	SchurSolve.lo \
-	Partition.lo \
-	ParDiSO.lo \
-	PardisoParameters.lo \
-	readdata.lo \
-	CSRdouble.lo \
-	Matrix2D.lo \
 	IpMa77SolverInterface.lo $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3) $(am__objects_4) $(am__objects_5)
 liblinsolvers_la_OBJECTS = $(am_liblinsolvers_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
+#my changes to include MPI and Schur
+SCHUR_INCLUDE=/home/kardos/PowerGrid/include
+OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
+MPI_INCLUDE=$(OPENMPI_DIR)/include
+INCLUDES += -I$(SCHUR_INCLUDE) -I$(MPI_INCLUDE)
+#======================================
 PPF77COMPILE = $(F77) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FFLAGS) $(FFLAGS)
 LTPPF77COMPILE = $(LIBTOOL) --tag=F77 --mode=compile $(F77) $(DEFS) \
@@ -426,13 +418,6 @@ liblinsolvers_la_SOURCES = IpGenKKTSolverInterface.hpp \
 	IpMc19TSymScalingMethod.cpp IpMc19TSymScalingMethod.hpp \
 	IpMa28TDependencyDetector.cpp IpMa28TDependencyDetector.hpp \
 	IpMa77SolverInterface.cpp IpMa77SolverInterface.hpp \
-	SchurSolve.cpp SchurSolve.hpp \
-	Partition.cpp Partition.hpp \
-	ParDiSO.cpp ParDiSO.hpp \
-	PardisoParameters.cpp PardisoParameters.hpp \
-	readdata.cpp readdata.hpp \
-	CSRdouble.cpp CSRdouble.hpp \
-	Matrix2D.cpp Matrix2D.hpp \
 	$(am__append_1) $(am__append_2) $(am__append_3) \
 	$(am__append_4) $(am__append_5)
 liblinsolvers_la_LDFLAGS = $(LT_LDFLAGS)
@@ -442,7 +427,7 @@ AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/../../Common` \
 	-I`$(CYGPATH_W) $(srcdir)/..` \
 	-I`$(CYGPATH_W) $(srcdir)/../../Interfaces` \
 	-I`$(CYGPATH_W) $(srcdir)/../../contrib/CGPenalty` \
-	-I`$(CYGPATH_W) /home/kardos/openmpi/include` \
+	-I`$(CYGPATH_W) $(OPENMPI_DIR)/include` \
 	$(MUMPS_CFLAGS) $(HSL_CFLAGS)
 
 

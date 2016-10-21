@@ -88,6 +88,11 @@ am_libipoptalg_la_OBJECTS = IpAdaptiveMuUpdate.lo IpAlgBuilder.lo \
 libipoptalg_la_OBJECTS = $(am_libipoptalg_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
+#my changes to include MPI and Schur
+MPI_INCLUDE=/home/kardos/privateapps/openmpi/2.0.1/include
+SCHUR_INCLUDE=/home/kardos/PowerGrid/include
+INCLUDES += -I$(SCHUR_INCLUDE) -I$(MPI_INCLUDE)
+#-----------------------------------
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) \
