@@ -5,7 +5,8 @@
 # These parameter has to match with runtime parameters of the solve_problems
 # $ mpirun -n NP ./solve_problem N NS, where N NS has to be same in the ipopt.opt
 
-MPIRUN=/home/kardos/openmpi-2.0.0/bin/mpirun
+OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
+MKLROOT=/apps/intel/17.0.0/mkl
 
 # check command line arguments
 if [ $# -ne 3 ]; then
@@ -25,4 +26,6 @@ else
     echo "problem_scenarios $NS" >> ipopt.opt
 fi
 
-${MPIRUN} -np $NP ./solve_problem $N $NS
+LD_LIBRARY_PATH=${MKLROOT}/lib/intel64:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=~/PowerGrid/lib:$LD_LIBRARY_PATH
+${OPENMPI_DIR}/bin/mpirun -np $NP ./solve_problem $N $NS
