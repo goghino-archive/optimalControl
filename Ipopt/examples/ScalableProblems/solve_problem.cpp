@@ -104,10 +104,10 @@ int main(int argv, char* argc[])
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    if (mpi_size < 2) {
-        printf("Run with minimum of two processes: mpirun -np 2 [...].\n");
-        return -3;
-    }
+    // if (mpi_size < 2) {
+    //     printf("Run with minimum of two processes: mpirun -np 2 [...].\n");
+    //     return -3;
+    // }
 
 
     Index N = -1;
@@ -174,7 +174,6 @@ int main(int argv, char* argc[])
         int pardiso_mtype = -2; // symmetric H_i
         int schur_factorization = 1; //augmented factorization
         SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization, MPI_COMM_WORLD);
-        //printf("-------------Initializing Schur Solver at child-----------\n");
         schurSolver.initSystem_OptimalControl(NULL, N, NS, NULL);
         
         while(1) {
@@ -191,7 +190,6 @@ int main(int argv, char* argc[])
             //update system if necessary
             if(new_matrix)
             {
-                //printf("--------------Updating system at child-----------\n");
                 schurSolver.updateSystem(NULL);
             }
 

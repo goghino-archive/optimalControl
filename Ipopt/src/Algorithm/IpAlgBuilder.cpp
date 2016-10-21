@@ -62,6 +62,7 @@
 #include "IpMa97SolverInterface.hpp"
 #include "IpMc19TSymScalingMethod.hpp"
 #include "IpPardisoSolverInterface.hpp"
+#include "IpSchurSolverInterface.hpp"
 #include "IpSlackBasedTSymScalingMethod.hpp"
 
 #ifdef HAVE_WSMP
@@ -140,7 +141,7 @@ namespace Ipopt
   void AlgorithmBuilder::RegisterOptions(SmartPtr<RegisteredOptions> roptions)
   {
     roptions->SetRegisteringCategory("Linear Solver");
-    roptions->AddStringOption9(
+    roptions->AddStringOption10(
       "linear_solver",
       "Linear solver used for step computations.",
 #ifdef COINHSL_HAS_MA27
@@ -182,6 +183,7 @@ namespace Ipopt
       "ma86", "use the Harwell routine HSL_MA86",
       "ma97", "use the Harwell routine HSL_MA97",
       "pardiso", "use the Pardiso package",
+      "schur", "use the Pardiso+schur package",
       "wsmp", "use WSMP package",
       "mumps", "use MUMPS package",
       "custom", "use custom linear solver",
@@ -189,7 +191,7 @@ namespace Ipopt
       "solution of the augmented linear system (for obtaining the search "
       "directions). "
       "Note, the code must have been compiled with the linear solver you want "
-      "to choose. Depending on your Ipopt installation, not all options are "
+      "to choose. Depending on your Ipopt installation, not all options are available"
       "available.");
     roptions->SetRegisteringCategory("Linear Solver");
     roptions->AddStringOption3(
@@ -420,6 +422,28 @@ namespace Ipopt
 # endif
 #else
       SolverInterface = new PardisoSolverInterface();
+#endif
+
+    }
+    else if (linear_solver=="schur") {
+#ifndef HAVE_PARDISO
+# ifdef HAVE_LINEARSOLVERLOADER
+      SolverInterface = new SchurSolverInterface();
+      char buf[256];
+      int rc = LSL_loadPardisoLib(NULL, buf, 255);
+      if (rc) {
+        std::string errmsg;
+        errmsg = "Selected linear solver Schur+Pardiso not available.\nTried to obtain Pardiso from shared library \"";
+        errmsg += LSL_PardisoLibraryName();
+        errmsg += "\", but the following error occured:\n";
+        errmsg += buf;
+        THROW_EXCEPTION(OPTION_INVALID, errmsg.c_str());
+      }
+# else
+      THROW_EXCEPTION(OPTION_INVALID, "Support for Schur+Pardiso has not been compiled into Ipopt.");
+# endif
+#else
+      SolverInterface = new SchurSolverInterface();
 #endif
 
     }

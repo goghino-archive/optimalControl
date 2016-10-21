@@ -43,11 +43,11 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @BUILD_LINEARSOLVERLOADER_TRUE@am__append_1 = \
-@BUILD_LINEARSOLVERLOADER_TRUE@	IpPardisoSolverInterface.cpp IpPardisoSolverInterface.hpp \
+@BUILD_LINEARSOLVERLOADER_TRUE@	IpPardisoSolverInterface.cpp IpPardisoSolverInterface.hpp IpSchurSolverInterface.cpp IpSchurSolverInterface.hpp \
 @BUILD_LINEARSOLVERLOADER_TRUE@	IpMa28Partition.F
 
 @BUILD_LINEARSOLVERLOADER_FALSE@@HAVE_PARDISO_TRUE@am__append_2 = \
-@BUILD_LINEARSOLVERLOADER_FALSE@@HAVE_PARDISO_TRUE@	IpPardisoSolverInterface.cpp IpPardisoSolverInterface.hpp
+@BUILD_LINEARSOLVERLOADER_FALSE@@HAVE_PARDISO_TRUE@	IpPardisoSolverInterface.cpp IpPardisoSolverInterface.hpp IpSchurSolverInterface.cpp IpSchurSolverInterface.hpp
 
 @BUILD_LINEARSOLVERLOADER_FALSE@@HAVE_MA28_TRUE@am__append_3 = IpMa28Partition.F
 @HAVE_WSMP_TRUE@am__append_4 = \
@@ -86,15 +86,16 @@ am__liblinsolvers_la_SOURCES_DIST = IpGenKKTSolverInterface.hpp \
 	IpMa28TDependencyDetector.cpp IpMa28TDependencyDetector.hpp \
 	IpMa77SolverInterface.cpp IpMa77SolverInterface.hpp \
 	IpPardisoSolverInterface.cpp IpPardisoSolverInterface.hpp \
+	IpSchurSolverInterface.cpp IpSchurSolverInterface.hpp \
 	IpMa28Partition.F IpWsmpSolverInterface.cpp \
 	IpWsmpSolverInterface.hpp IpIterativeWsmpSolverInterface.cpp \
 	IpIterativeWsmpSolverInterface.hpp IpMumpsSolverInterface.cpp \
 	IpMumpsSolverInterface.hpp 
 
 @BUILD_LINEARSOLVERLOADER_TRUE@am__objects_1 =  \
-@BUILD_LINEARSOLVERLOADER_TRUE@	IpPardisoSolverInterface.lo \
+@BUILD_LINEARSOLVERLOADER_TRUE@	IpPardisoSolverInterface.lo IpSchurSolverInterface.lo \
 @BUILD_LINEARSOLVERLOADER_TRUE@	IpMa28Partition.lo
-@BUILD_LINEARSOLVERLOADER_FALSE@@HAVE_PARDISO_TRUE@am__objects_2 = IpPardisoSolverInterface.lo
+@BUILD_LINEARSOLVERLOADER_FALSE@@HAVE_PARDISO_TRUE@am__objects_2 = IpPardisoSolverInterface.lo IpSchurSolverInterface.lo
 @BUILD_LINEARSOLVERLOADER_FALSE@@HAVE_MA28_TRUE@am__objects_3 = IpMa28Partition.lo
 @HAVE_WSMP_TRUE@am__objects_4 = IpWsmpSolverInterface.lo \
 @HAVE_WSMP_TRUE@	IpIterativeWsmpSolverInterface.lo
@@ -461,6 +462,7 @@ ASTYLE_FILES = \
 	IpTSymLinearSolver.cppbak IpTSymLinearSolver.hppbak \
 	IpTSymScalingMethod.hppbak \
 	IpPardisoSolverInterface.cppbak IpPardisoSolverInterface.hppbak \
+	IpSchurSolverInterface.cppbak IpSchurSolverInterface.hppbak \
 	IpWsmpSolverInterface.cppbak IpWsmpSolverInterface.hppbak
 
 DISTCLEANFILES = $(ASTYLE_FILES)
@@ -527,6 +529,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IpMc19TSymScalingMethod.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IpMumpsSolverInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IpPardisoSolverInterface.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IpSchurSolverInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IpSlackBasedTSymScalingMethod.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IpTSymDependencyDetector.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IpTSymLinearSolver.Plo@am__quote@
