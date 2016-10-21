@@ -65,8 +65,8 @@ First, build the example by typing
 
 and to run the example use the run.sh script, for example
 
-   ./run.sh 2 10 2
-
+   ./run.sh 2 10 2 schur     run 2 MPI processes using Schur solver (N>1 always)
+   ./run.sh 1 10 2 pardiso   run !!single!! process with Pardiso (N=1 always)
 
 This package contains several subdirectories corresponding to COIN-OR
 projects (www.coin-or.org). The AUTHORS, LICENSE and README files in 
