@@ -101,11 +101,11 @@ namespace Ipopt
       a_(NULL),
       negevals_(-1),
       initialized_(false),
-      schurSolver(-2, 1) //equivalent to commented code below
+      schurSolver(-2, 1, MPI_COMM_WORLD) //equivalent to commented code below
   {
     //const int pardiso_mtype = -2; // symmetric H_i
     //const int schur_factorization = 1;
-    //schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+    //schurSolver = SchurSolve(pardiso_mtype, schur_factorization, MPI_COMM_WORLD);
     DBG_START_METH("PardisoSolverInterface::PardisoSolverInterface()",dbg_verbosity);
   }
 

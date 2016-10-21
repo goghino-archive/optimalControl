@@ -173,7 +173,7 @@ int main(int argv, char* argc[])
         // child process waits for master to initiate the solution phase
         int pardiso_mtype = -2; // symmetric H_i
         int schur_factorization = 1; //augmented factorization
-        SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
+        SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization, MPI_COMM_WORLD);
         //printf("-------------Initializing Schur Solver at child-----------\n");
         schurSolver.initSystem_OptimalControl(NULL, N, NS, NULL);
         
