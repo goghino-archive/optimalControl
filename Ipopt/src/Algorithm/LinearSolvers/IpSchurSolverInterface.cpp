@@ -204,7 +204,7 @@ namespace Ipopt
     // it is communicated to children inside the solve
     double* X = new double [dim_ * nrhs];
     schurSolver.solveSystem(X, rhs_vals, nrhs);
-    schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
+    //schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
     schurSolver.timingReport();  
 
     // overwrite rhs by the solution
