@@ -166,6 +166,7 @@ namespace Ipopt
     DBG_ASSERT(initialized_);
 
     CSRdouble* KKT = new CSRdouble((int)dim_, (int)dim_, (int)nonzeros_, ia, ja, a_);
+    KKT->matrixType = SYMMETRIC;
 
 #ifdef DEBUG
     char buffer[200];
@@ -204,7 +205,7 @@ namespace Ipopt
     double* X = new double [dim_ * nrhs];
     schurSolver.solveSystem(X, rhs_vals, nrhs);
     schurSolver.errorReport(nrhs, *KKT, rhs_vals, X);
-    //schurSolver.timingReport();  
+    schurSolver.timingReport();  
 
     // overwrite rhs by the solution
     for (int i=0; i<dim_*nrhs ;i++)
