@@ -100,12 +100,6 @@ int main(int argv, char* argc[])
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    if (mpi_size < 2) {
-        printf("Run with minimum of two processes: mpirun -np 2 [...].\n");
-        return -3;
-    }
-
-
     Index N = -1;
     Index NS = -1;
     if(argv == 3)
