@@ -35,7 +35,7 @@ else
     echo "linear_solver $SOLVER" >> ${PREFIX}/ipopt.opt
 fi
 
-for comp_nodes in 1 2 4 8; do
+for comp_nodes in 1 2 16 32; do
 
 #master process is not computing, only distributes work
 tot_nodes=$((comp_nodes + 1))
@@ -46,7 +46,7 @@ sbatch <<-_EOF
 #SBATCH --job-name=OC_${comp_nodes}_${N}_${NS}
 #SBATCH --ntasks-per-node=1
 #SBATCH --nodes=${tot_nodes}
-#SBATCH --time=01:00:00
+#SBATCH --time=02:30:00
 #SBATCH --output=job_${comp_nodes}_${N}_${NS}.out
 
 export OMP_NUM_THREADS=8
