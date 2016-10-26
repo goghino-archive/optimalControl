@@ -11,16 +11,15 @@
 MKLROOT=/apps/intel/17.0.0/mkl
 
 # check command line arguments
-if [ $# -ne 4 ]; then
-    echo 'Usage: $./run.sh NP N NS SOLVER'
-    echo 'SOLVER is pardiso or schur'
-    exit
-fi
+#if [ $# -ne 4 ]; then
+#    echo 'Usage: $./run.sh NP N NS SOLVER'
+#    echo 'SOLVER is pardiso or schur'
+#    exit
+#fi
 
-NP=$1 # number of processes
-N=$2  # dimension of the grid
-NS=$3 # number of scenarios
-SOLVER=$4 #linear solver
+N=300  # dimension of the grid
+NS=128 # number of scenarios
+SOLVER=schur #linear solver
 
 #location of the executable
 PREFIX=/home/kardos/optimalControl/build/Ipopt/examples/ScalableProblems
@@ -36,20 +35,21 @@ else
     echo "linear_solver $SOLVER" >> ${PREFIX}/ipopt.opt
 fi
 
-for comp_nodes in 1; do
+for comp_nodes in 1 2 4 8; do
 
 #master process is not computing, only distributes work
-tot_nodes=$((comp_nodes+1))
+tot_nodes=$((comp_nodes + 1))
+ns=$((comp_nodes * NS)) #constant #NS per node for weak scaling
 
 sbatch <<-_EOF
 #!/bin/bash
 #SBATCH --job-name=OC_${comp_nodes}_${N}_${NS}
 #SBATCH --ntasks-per-node=1
 #SBATCH --nodes=${tot_nodes}
-#SBATCH --time=00:05:00
+#SBATCH --time=01:00:00
 #SBATCH --output=job_${comp_nodes}_${N}_${NS}.out
 
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=8
 export PARDISOLICMESSAGE=1
 
 LD_LIBRARY_PATH=~/PowerGrid/lib:${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH} \
