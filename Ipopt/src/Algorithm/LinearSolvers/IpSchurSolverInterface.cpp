@@ -173,15 +173,11 @@ namespace Ipopt
     KKT->writeToFile(buffer);
 #endif
     
-    int *index_a = NULL;
-    KKT->fillSymmetricNew(index_a);
-
-
     static int initialized = 0;
     if(!initialized)
     {
         //printf("-------------Initializing Schur Solver at master-----------\n");
-        schurSolver.initSystem_OptimalControl(KKT, N_, NS_, index_a);
+        schurSolver.initSystem_OptimalControl(KKT, N_, NS_);
         initialized = 1;
         new_matrix = 0; // new matrix is set by calling initSystem, no need to call update
     }
