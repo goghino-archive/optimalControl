@@ -11,7 +11,7 @@ do
     
     id=0
     
-    for f in `ls ./job_*`
+    for f in `ls $1/job_*`
     do
         
         #Match NP N NS in job_NP_N_NS.out filename
