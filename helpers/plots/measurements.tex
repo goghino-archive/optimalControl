@@ -10,10 +10,10 @@
 
 \pagestyle{empty}
 
-\definecolor{colorA}{RGB}{142,66,255}
-\definecolor{colorB}{RGB}{58,60,255}
-\definecolor{colorC}{RGB}{74, 255,242}
-\definecolor{colorD}{RGB}{78,255,103}
+\definecolor{colorA}{RGB}{158,1,66}
+\definecolor{colorB}{RGB}{213,62,79}
+\definecolor{colorC}{RGB}{244,109,67}
+\definecolor{colorD}{RGB}{253,174,97}
 
 \definecolor{colorE}{RGB}{235,190,49}
 
@@ -22,8 +22,53 @@
 
 \begin{figure}[ht!]
   \begin{center}
+    \resizebox {0.99\columnwidth} {!} {
     \begin{tikzpicture}
       \begin{semilogyaxis}[
+          %ybar,
+          width=\linewidth, % Scale the plot to \linewidth
+          grid=major, 
+          grid style={dashed,gray!30},
+          xlabel=Number of Compute Nodes, % Set the labels
+          ylabel=Time (s),
+          %legend style={at={(0.12,0.95)},anchor=north},
+          legend pos=outer north east,
+          %enlargelimits=false,
+          xtick=data,
+          xmin=0.5, xmax=5.5,
+          xticklabels from table={strong/strong_300_64_schur.csv}{Nodes},
+          ymin=0,
+          cycle list name=exotic,
+          %every axis plot/.append style={fill,draw=none,no markers}
+        ]
+        \addplot [dotted, color=black, thick] table[x=Id,y=Time,col sep=space, forget plot] {strong/strong_300_64_schur_ideal.csv};
+        \addplot [dotted, color=black, thick] table[x=Id,y=Time,col sep=space, forget plot] {strong/strong_300_64_solve_ideal.csv};
+        \addplot [solid, color=red] table[x=Id,y=Time,col sep=space] {strong/strong_300_64_schur.csv};
+        \addplot [dashed, color=red] table[x=Id,y=Time,col sep=space] {strong/strong_300_64_solve.csv};
+
+        \addplot [dotted, color=black, thick] table[x=Id,y=Time,col sep=space, forget plot] {strong/strong_300_128_schur_ideal.csv};
+        \addplot [dotted, color=black, thick] table[x=Id,y=Time,col sep=space, forget plot] {strong/strong_300_128_solve_ideal.csv};
+        \addplot [solid, color=blue]table[x=Id,y=Time,col sep=space] {strong/strong_300_128_schur.csv};
+        \addplot [dashed, color=blue]table[x=Id,y=Time,col sep=space] {strong/strong_300_128_solve.csv};
+
+        \addplot [dotted, color=black, thick] table[x=Id,y=Time,col sep=space, forget plot] {strong/strong_300_256_schur_ideal.csv};
+        \addplot [dotted, color=black, thick] table[x=Id,y=Time,col sep=space, forget plot] {strong/strong_300_256_solve_ideal.csv};
+        \addplot [solid, color=green]table[x=Id,y=Time,col sep=space] {strong/strong_300_256_schur.csv};
+        \addplot [dashed, color=green]table[x=Id,y=Time,col sep=space] {strong/strong_300_256_solve.csv};
+        
+        \legend{$NS=64$ Schur, $NS=64$ Solve, $NS=128$ Schur, $NS=128$ Solve, $NS=256$ Schur, $NS=256$ Solve}
+      \end{semilogyaxis}
+    \end{tikzpicture}
+    }%resize box
+    \caption{Strong Scaling of Optimal control $N=300^2$ with different number of scenarios $NS$ (gcc/6.1.0, Intel Xeon E5-2630 v3 @ 2.40GHz).}
+  \end{center}
+\end{figure}
+
+\begin{figure}[ht!]
+  \begin{center}
+  \resizebox {0.99\columnwidth} {!} {
+    \begin{tikzpicture}
+      \begin{axis}[
           %ybar,
           width=\linewidth, % Scale the plot to \linewidth
           grid=major, 
@@ -34,19 +79,22 @@
           legend pos=outer north east,
           %enlargelimits=false,
           xtick=data,
-          xmin=0.5, xmax=5.5,
-          xticklabels from table={strong/strong_300_64.csv}{Nodes},
+          xmin=0.5, xmax=4.5,
+          xticklabels from table={weak/weak_300_64_schur.csv}{Nodes},
           ymin=0,
           cycle list name=exotic,
           %every axis plot/.append style={fill,draw=none,no markers}
         ]
-        \addplot table[x=Id,y=Time,col sep=space] {strong/strong_300_64.csv};
-        \addplot table[x=Id,y=Time,col sep=space] {strong/strong_300_128.csv};
-        \addplot table[x=Id,y=Time,col sep=space] {strong/strong_300_256.csv};
-        \legend{$NS=64$, $NS=128$, $NS=256$}
-      \end{semilogyaxis}
+        \addplot [solid, color=red] table[x=Id,y=Time,col sep=space] {weak/weak_300_64_schur.csv};
+        \addplot [dashed, color=red] table[x=Id,y=Time,col sep=space, forget plot] {weak/ideal_schur.csv};
+        \addplot [solid, color=blue] table[x=Id,y=Time,col sep=space] {weak/weak_300_64_solve.csv};
+        \addplot [dashed, color=blue] table[x=Id,y=Time,col sep=space, forget plot] {weak/ideal_solve.csv};
+        %\addplot [solid, color=green] table[x=Id,y=Time,col sep=space] {weak/weak_300_64_solveOLD.csv};
+        \legend{Schur, Solve}
+      \end{axis}
     \end{tikzpicture}
-    \caption{Strong Scaling of Optimal control $N=300^2$ with different number of scenarios $NS$ (gcc/6.1.0, Intel Xeon E5-2630 v3 @ 2.40GHz).}
+    }%resize box
+    \caption{Weak Scaling of Optimal control $N=300^2$ with constant number of scenarios per node $NS=64$ (gcc/6.1.0, Intel Xeon E5-2630 v3 @ 2.40GHz).}
   \end{center}
 \end{figure}
 
