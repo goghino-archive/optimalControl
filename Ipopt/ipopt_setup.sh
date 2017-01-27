@@ -1,7 +1,8 @@
 #!/bin/bash
 #MKLROOT=/opt/intel/mkl/lib/intel64 #old version
 #MKLROOT=/opt/intel/compilers_and_libraries_2016.2.181/linux/mkl
-MKLROOT=/opt/intel/compilers_and_libraries_2017/linux/mkl
+#MKLROOT=/opt/intel/compilers_and_libraries_2017/linux/mkl
+MKLROOT=/apps/intel/17.0.0/mkl #ICS MASTER
 MKLIB=-L${MKLROOT}
 PARDISOLIB=/home/kardos/lib/pardiso
 
