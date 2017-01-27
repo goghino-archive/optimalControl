@@ -61,7 +61,10 @@ find examples in the subdirectory
 
    cd Ipopt/examples/ScalableProblems
 
-First, build the example by typing 
+First, set up the proper environment by loading proper modulefiles (i.e. ICS-MASTER machine):
+  1) use.own        2) intel/17.0.0   3) gcc/6.1.0
+
+and then build the example by typing 
 
    make
 
