@@ -21,6 +21,7 @@
 #include "IpMa97SolverInterface.hpp"
 #include "IpMa28TDependencyDetector.hpp"
 #include "IpPardisoSolverInterface.hpp"
+#include "IpSchurSolverInterface.hpp"
 #ifdef COIN_HAS_MUMPS
 # include "IpMumpsSolverInterface.hpp"
 #endif
@@ -65,6 +66,7 @@ namespace Ipopt
 #if defined(HAVE_PARDISO) || defined(HAVE_LINEARSOLVERLOADER)
     roptions->SetRegisteringCategory("Pardiso Linear Solver");
     PardisoSolverInterface::RegisterOptions(roptions);
+    SchurSolverInterface::RegisterOptions(roptions);
 #endif
 
 #ifdef HAVE_WSMP

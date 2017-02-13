@@ -1,0 +1,5 @@
+Id Nodes Time Ipopt_iter Schur_iter
+1 1 5.607 16 49
+2 2 5.607 16 45
+3 4 5.607 16 45
+4 8 5.607  13 10

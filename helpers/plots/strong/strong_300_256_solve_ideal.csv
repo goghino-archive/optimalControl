@@ -1,0 +1,6 @@
+Id Nodes Time Ipopt_iter Schur_iter Residual
+1 1 24.6112 40
+2 2 12.3056 16 45
+3 4 6.1528 16 45
+4 8 3.0764 16 45
+5 16 1.5382 16 45

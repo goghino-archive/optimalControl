@@ -90,25 +90,15 @@ int main(int argv, char* argc[])
 
     mpi_check(MPI_Init(&argv, &argc));
 
-    /* workaround to attach GDB */
-    int i = 0;
+    // identify the process
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
     printf("Process with PID %d on %s ready to run\n", getpid(), hostname);
     fflush(stdout);
-    //after attaching: $(gdb) set var i = 7
-    //while (0 == i)
-    //    sleep(5);
 
     int mpi_rank, mpi_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-
-    if (mpi_size < 2) {
-        printf("Run with minimum of two processes: mpirun -np 2 [...].\n");
-        return -3;
-    }
-
 
     Index N = -1;
     Index NS = -1;
@@ -173,9 +163,8 @@ int main(int argv, char* argc[])
         // child process waits for master to initiate the solution phase
         int pardiso_mtype = -2; // symmetric H_i
         int schur_factorization = 1; //augmented factorization
-        SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization);
-        //printf("-------------Initializing Schur Solver at child-----------\n");
-        schurSolver.initSystem_OptimalControl(NULL, N, NS, NULL);
+        SchurSolve schurSolver = SchurSolve(pardiso_mtype, schur_factorization, MPI_COMM_WORLD);
+        schurSolver.initSystem_OptimalControl(NULL, N, NS);
         
         while(1) {
             //do test on termination, set by master process
@@ -191,7 +180,6 @@ int main(int argv, char* argc[])
             //update system if necessary
             if(new_matrix)
             {
-                //printf("--------------Updating system at child-----------\n");
                 schurSolver.updateSystem(NULL);
             }
 

@@ -7,7 +7,6 @@
 # Directory to the sources for the (example) problem definition files
 SRCDIR = @srcdir@
 VPATH = @srcdir@
-#SCHURDIR=/home/kardos/Ipopt-3.12.4/Ipopt/examples/ScalableProblems/my_solver/src
 
 # Compiler and options
 CXX = @CXX@
@@ -98,12 +97,17 @@ CYGPATH_W = @CYGPATH_W@
 
 .SUFFIXES: .cpp .c .o .obj
 
-# Add include paht to the SchurSolver
-INCL += -I../../../../Ipopt/src/Algorithm/LinearSolvers
-INCL += -I/home/kardos/openmpi/include
-
 #provide necessary libraries to statically link with MPI (libmpi.a and its helpers)
-CXXLINKFLAGS += -L/home/kardos/openmpi/lib
+MKLROOT=/apps/intel/17.0.0/mkl
+OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
+SCHUR_DIR=/home/kardos/PowerGrid
+CXXLINKFLAGS += -L$(OPENMPI_DIR)/lib -L${SCHUR_DIR}/lib -L${MKLROOT}/lib/intel64
+BLAS=-lmkl_gf_lp64 -lmkl_lapack95_lp64 -lmkl_sequential -lmkl_core -lpthread
+
+# Add include paht to the SchurSolver
+INCL += -I${SCHUR_DIR}/include
+INCL += -I${OPENMPI_DIR}/include
+
 LIBS +=  -lmpi
 LIBS += -lopen-rte #MPI helpers
 LIBS += -lopen-pal #MPI helpers
@@ -111,7 +115,10 @@ LIBS += -lrt #some system utils
 LIBS += -libverbs #some system utils
 LIBS += -lnuma #???some Linux libs do not have static versions(e.g., libnuma)
 LIBS += -lutil #some dependency from open-pal
-LIBS += /usr/lib/gcc/x86_64-linux-gnu/5/libquadmath.a #fortran write dependency
+#LIBS += /usr/lib/gcc/x86_64-linux-gnu/5/libquadmath.a #fortran write dependency (arch)
+LIBS += /apps/gcc/gcc-6.1.0/lib64/libquadmath.a #fortran write dependency (icsmaster)
+LIBS += -lschur
+LIBS += ${BLAS}
 
 $(EXE): $(MAINOBJ) $(LIB)
 	$(CXX) $(CXXFLAGS) $(CXXLINKFLAGS) -o $@ $(MAINOBJ) $(LIBS)

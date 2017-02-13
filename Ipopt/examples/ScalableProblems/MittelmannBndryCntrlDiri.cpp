@@ -156,7 +156,10 @@ MittelmannBndryCntrlDiriBase::get_starting_point(Index n, bool init_x, Number* x
   for (Index k=0; k<NS_; k++) {
       for (Index i=0; i< N_; i++) { 
           for (Index j=0; j<N_; j++) {
-              x[y_index(i,j,k)] = y_d_[y_index(i,j,k)]; //TODO: size of the x = new [size???], where is it initialized?
+              x[y_index(i,j,k)] = y_d_[y_index(i,j,k)]; 
+              //TODO: size of the x = new [size???], where is it initialized?
+              // it is IPOPT's internal variable, its size is determined
+              // in get_nlp_info method by specifying problem size n = NN*NS + 4N + 4
           }
       }
   }
@@ -208,7 +211,7 @@ MittelmannBndryCntrlDiriBase::eval_f(Index n, const Number* x,
     if (alpha_>0.) {
         Number usum = 0.;
         for (Index i=0; i<4*N_+4; i++) {
-            usum += x[offset+i]*x[offset+i]; //TODO - single control for all scenarios
+            usum += x[offset+i]*x[offset+i]; //single control for all scenarios
         }
         obj_value += alpha_*h_/2.*usum;
     }
@@ -264,9 +267,11 @@ bool MittelmannBndryCntrlDiriBase::eval_g(Index n, const Number* x, bool new_x,
               Number val;
 
               // Start with the discretized Laplacian operator
+              // !!! if i,j<0 || i,j>=N_ y_index skips at the end of x
+              // where the values for the boundary are saved
               val = 4.* x[y_index(i,j,k)]
                   - x[y_index(i-1,j,k)] - x[y_index(i+1,j,k)] 
-                  - x[y_index(i,j-1,k)] - x[y_index(i,j+1,k)]; //!!! if i,j<0 || i,j>=N_
+                  - x[y_index(i,j-1,k)] - x[y_index(i,j+1,k)]; 
 
               g[ig] = val;
               ig++;

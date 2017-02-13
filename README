@@ -10,16 +10,18 @@ create the build directory and use the script to configure Ipopt
 
 Note that you might have to specify additional options, in case you
 don't want to use the default choices that configure makes (e.g.,
-compilers). In any case, you need to provide path to the Pardiso
-library and MKL:
+compilers).
 
-PARDISO_DIR = /home/drosos/pardiso_gnu
-MKLROOT = /opt/intel/compilers_and_libraries_2017/linux/mkl
+Afterwards, you need to update paths in following makefiles
 
-and manualy provide path to mpi installation in the Makefile.in files:
-/home/kardos/Ipopt-3.12.4/Ipopt/examples/ScalableProblems/Makefile.in
-and
-/home/kardos/Ipopt-3.12.4/Ipopt/src/Algorithm/LinearSolvers/Makefile.in
+   Ipopt/examples/ScalableProblems/Makefile.in:
+   MKLROOT=/apps/intel/17.0.0/mkl
+   OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
+   SCHUR_DIR=/home/kardos/PowerGrid
+
+   Ipopt/src/Algorithm/LinearSolvers/Makefile.in:
+   SCHUR_INCLUDE=/home/kardos/PowerGrid/include
+   OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
 
 If everything went fine, you will see at the end of the output
 
@@ -57,16 +59,19 @@ More information on the compilation and installation can be found at
 Now you can link your own code with the installed libraries.  You can
 find examples in the subdirectory
 
-   Ipopt/examples/ScalableProblems
+   cd Ipopt/examples/ScalableProblems
 
-First, build the example by typing 
+First, set up the proper environment by loading proper modulefiles (i.e. ICS-MASTER machine):
+  1) use.own        2) intel/17.0.0   3) gcc/6.1.0
+
+and then build the example by typing 
 
    make
 
 and to run the example use the run.sh script, for example
 
-   ./run.sh 2 10 2
-
+   ./run.sh 2 10 2 schur     run 2 MPI processes using Schur solver (N>1 always)
+   ./run.sh 1 10 2 pardiso   run !!single!! process with Pardiso (N=1 always)
 
 This package contains several subdirectories corresponding to COIN-OR
 projects (www.coin-or.org). The AUTHORS, LICENSE and README files in 
