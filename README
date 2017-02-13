@@ -5,7 +5,7 @@ Go into the directory that you just downloaded or extracted (e.g., Ipopt-3.3.1),
 create the build directory and use the script to configure Ipopt
 
    ./ipopt_static for static version
-   of
+   or
    ./ipopt_setup for dynamic version
 
 Note that you might have to specify additional options, in case you
