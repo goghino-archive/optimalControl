@@ -112,8 +112,10 @@ liblinsolvers_la_OBJECTS = $(am_liblinsolvers_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 #my changes to include MPI and Schur
-SCHUR_INCLUDE=/home/kardos/PowerGrid/include
-OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
+#SCHUR_INCLUDE=/home/kardos/PowerGrid/include
+SCHUR_INCLUDE=/home/kardos/block_solve/include
+#OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
+OPENMPI_DIR=/home/kardos/openmpi
 MPI_INCLUDE=$(OPENMPI_DIR)/include
 INCLUDES += -I$(SCHUR_INCLUDE) -I$(MPI_INCLUDE)
 #======================================

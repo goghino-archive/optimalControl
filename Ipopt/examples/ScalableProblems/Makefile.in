@@ -98,9 +98,12 @@ CYGPATH_W = @CYGPATH_W@
 .SUFFIXES: .cpp .c .o .obj
 
 #provide necessary libraries to statically link with MPI (libmpi.a and its helpers)
-MKLROOT=/apps/intel/17.0.0/mkl
-OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
-SCHUR_DIR=/home/kardos/PowerGrid
+#MKLROOT=/apps/intel/17.0.0/mkl
+MKLROOT=/opt/intel/mkl
+#OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
+OPENMPI_DIR=/home/kardos/openmpi
+#SCHUR_DIR=/home/kardos/PowerGrid
+SCHUR_DIR=/home/kardos/block_solve
 CXXLINKFLAGS += -L$(OPENMPI_DIR)/lib -L${SCHUR_DIR}/lib -L${MKLROOT}/lib/intel64
 BLAS=-lmkl_gf_lp64 -lmkl_lapack95_lp64 -lmkl_sequential -lmkl_core -lpthread
 
@@ -108,6 +111,7 @@ BLAS=-lmkl_gf_lp64 -lmkl_lapack95_lp64 -lmkl_sequential -lmkl_core -lpthread
 INCL += -I${SCHUR_DIR}/include
 INCL += -I${OPENMPI_DIR}/include
 
+LIBS += -lschur
 LIBS +=  -lmpi
 LIBS += -lopen-rte #MPI helpers
 LIBS += -lopen-pal #MPI helpers
@@ -115,9 +119,8 @@ LIBS += -lrt #some system utils
 LIBS += -libverbs #some system utils
 LIBS += -lnuma #???some Linux libs do not have static versions(e.g., libnuma)
 LIBS += -lutil #some dependency from open-pal
-#LIBS += /usr/lib/gcc/x86_64-linux-gnu/5/libquadmath.a #fortran write dependency (arch)
-LIBS += /apps/gcc/gcc-6.1.0/lib64/libquadmath.a #fortran write dependency (icsmaster)
-LIBS += -lschur
+LIBS += /usr/lib/gcc/x86_64-linux-gnu/5/libquadmath.a #fortran write dependency (arch)
+#LIBS += /apps/gcc/gcc-6.1.0/lib64/libquadmath.a #fortran write dependency (icsmaster)
 LIBS += ${BLAS}
 
 $(EXE): $(MAINOBJ) $(LIB)
