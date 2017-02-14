@@ -22,6 +22,10 @@ Afterwards, you need to update paths in following makefiles
    Ipopt/src/Algorithm/LinearSolvers/Makefile.in:
    SCHUR_INCLUDE=/home/kardos/PowerGrid/include
    OPENMPI_DIR=/home/kardos/privateapps/openmpi/2.0.1
+   
+   Ipopt/src/Algorithm/Makefile.in:
+   SCHUR_INCLUDE=/home/kardos/PowerGrid/include
+   MPI_INCLUDE=/home/kardos/privateapps/openmpi/2.0.1
 
 If everything went fine, you will see at the end of the output
 
