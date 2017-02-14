@@ -5,6 +5,8 @@ Go into the directory that you just downloaded or extracted (e.g., Ipopt-3.3.1),
 create the build directory and use the script to configure Ipopt
 
    ./ipopt_static for static version
+   of
+   ./helpers/my_configure [latest version]
    or
    ./ipopt_setup for dynamic version
 
@@ -55,6 +57,22 @@ In the directory where you ran the configure script:
 More information on the compilation and installation can be found at
 
    https://projects.coin-or.org/BuildTools/wiki/user-compile
+   
+To build Matlab interface do the following
+
+1.  cd build/contribute/MatlabInterface/src
+
+2.  Adjust Makefile  
+   * move -framework Accelerate from LIBS into LFLAGS [on mac computer]
+   * run makefile and copy g++ linking command into standalone script and
+     add proper symbols manually [see helpers/compile_mex.sh]
+
+3.  make install
+
+4.  In matlab add path to ipopt mex
+    * addpath /Users/Juraj/Documents/Optimization/Ipopt-3.12.6/myinstall/lib [should contain ipopt.mexmaci64]
+    * savepath, path, rmpath, addpath
+    * export PATHS to pardiso and possibly other libraries
 
 **********************************************************************
 ***                     USING THE LIBRARIES                        ***
