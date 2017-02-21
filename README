@@ -1,20 +1,9 @@
 **********************************************************************
 ***                        CONFIGURATION                           ***
 **********************************************************************
-Go into the directory that you just downloaded or extracted (e.g., Ipopt-3.3.1),
-create the build directory and use the script to configure Ipopt
-
-   ./ipopt_static for static version
-   of
-   ./helpers/my_configure [latest version]
-   or
-   ./ipopt_setup for dynamic version
-
-Note that you might have to specify additional options, in case you
-don't want to use the default choices that configure makes (e.g.,
-compilers).
-
-Afterwards, you need to update paths in following makefiles
+Go into the directory that you just downloaded or extracted (e.g., Ipopt-3.3.1).
+First, you need to update paths in following makefiles in order to compile with
+mpi enabled library SchurSolve
 
    Ipopt/examples/ScalableProblems/Makefile.in:
    MKLROOT=/apps/intel/17.0.0/mkl
@@ -28,6 +17,17 @@ Afterwards, you need to update paths in following makefiles
    Ipopt/src/Algorithm/Makefile.in:
    SCHUR_INCLUDE=/home/kardos/PowerGrid/include
    MPI_INCLUDE=/home/kardos/privateapps/openmpi/2.0.1
+
+
+Now, create the build directory and use the script to configure Ipopt
+
+   helpers/ipopt_static for static version [default tested script]
+   or
+   helpers/ipopt_setup for dynamic version
+
+Note that you might have to specify additional options, in case you
+don't want to use the default choices that configure makes (e.g.,
+compilers).
 
 If everything went fine, you will see at the end of the output
 
